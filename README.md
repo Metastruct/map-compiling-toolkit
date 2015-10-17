@@ -7,13 +7,13 @@ Features
  - Map compiling (vbsp, vvis, vrad, vrad HDR). It's a batch file so configure to your liking yourself.
 	 - Low priority, abort on error, etc
  - Instances support using VMFII
- - Launch hammer with expanded view range
  - Auto map versioning (incremental numbering)
- - Automatic copying to game directory and elsewhere
- - Packing required custom content and custom defined custom content
+ - Automatic copying to game directory, etc
+ - Autopack required custom content (and custom defined custom content)
  - Automatic cubemaps creation (LDR, HDR)
  - Workshop map uploading
  - Map testing before uploading
+ - Launch hammer with expanded view range
  - bz2 packing
  - Experimental: Pack used CS:S/TF2 VMTs into BSP to be able to modify them if they are missing (less black and purple textures) 
 
@@ -25,18 +25,21 @@ Requirements
 	 - CS:S
 	 - TF2
  - Metastruct SVN (or your own map data)
- - Java
+ - Java (for pakrat)
  - .NET (preinstalled most likely)
  - A lot of time
 
 
 Example paths
 -------------
+
+These are some of the example paths to give idea where to put things on your computer
+
  - c:\Program Files (x86)\Steam\
- - c:\users\username\documents\metastruct_mapcompiler\user_config.cmd
- - c:\users\username\documents\metastruct_mapcompiler\game_hammer\gameinfo.txt
- - c:\users\username\documents\metastruct\mapdata\materials
- - c:\users\username\documents\metastruct\mapfiles\mymap.vmf
+ - c:\users\username\documents\metastruct_mapcompiler\user_config.cmd (this is what defines paths like where to get vbsp.exe)
+ - c:\users\username\documents\metastruct_mapcompiler\game_hammer\gameinfo.txt (hammer reads this to mount things properly)
+ - c:\users\username\documents\metastruct\mapdata\materials (mapdata = custom content)
+ - c:\users\username\documents\metastruct\mapfiles\mymap.vmf (mapfiles = logs and vmfs mostly)
 
 
 Setting up
@@ -45,8 +48,8 @@ Setting up
 
 - Configure user_config.cmd! Example *user_config.cmd* in *user_config_example.cmd*
 - **Copy** extras/gameinfo.txt
-		-> steam\steamapps\sourcemods\garrysmod_mapcompile\gameinfo.txt
-		- Configure paths in the file.
+		-> mapcompiler\game_hammer\gameinfo.txt & mapcompiler\game_compiling\gameinfo.txt
+ - Configure paths in the files.
 - **Copy** extras/GameConfig.txt
 		-> Folder that is opened by "GO sourcesdk_bin.cmd" (or append to the existing file if you know your way around)
       - Configure paths in the file (You only need to set the paths for "Garry's Mod MDK")
