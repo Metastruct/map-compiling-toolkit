@@ -8,6 +8,9 @@
 
 @set SteamUser=%SteamAppUser%
 
+
+
+
 @rem Actual steam path
 @set SteamPath=C:\Program Files (x86)\Steam
 
@@ -28,7 +31,7 @@
 
 @call user_config.cmd
 
-@call "%~dp0\build_version.bat"
+@call "%~d0%~p0\build_version.bat"
 
 @rem input vmf
 @set mapfile=metastruct_3
@@ -56,7 +59,15 @@
 @set FGDS=%sourcesdk%\bin\base.fgd,%sourcesdk%\bin\halflife2.fgd,%mapfolder%\metastruct.fgd
 
 @rem REQUIRED configuration folder, needs gameinfo.txt at least
-@set VProject=%SteamPath%\steamapps\sourcemods\garrysmod_mapcompile
+@set VProject=%~d0%~p0
+@set VProject_Hammer=%VProject%game_hammer
+@set VProject=%VProject%game_compiling
+
+@IF EXIST "%VProject_Hammer%"\gameinfo.txt @GOTO VProject_Hammer_fixskip
+@set VProject_Hammer=%VProject%
+@echo Missing %VProject_Hammer%\gameinfo.txt
+:VProject_Hammer_fixskip
+
 
 @call user_config.cmd
 
@@ -66,18 +77,14 @@
 
 @set ValvePlatformMutex=%SteamPath%\steam.exe
 @call user_config.cmd
-@set PATH=%~dp0;%sourcesdk%\bin;%SteamPath%\;%PATH%
+@set PATH=%~d0%~p0;%sourcesdk%\bin;%SteamPath%\;%PATH%
 @set SteamAppId=4000
 @set SteamAppVersionId=45
 @set SteamGameId=211
 @set SteamGame=garrysmod
 
+
 @call user_config.cmd
-
-
-
-
-
 
 
 
@@ -114,10 +121,24 @@
 @set TESTPATH=%SteamPath%
 @IF NOT EXIST "%TESTPATH%" @GOTO fail
 
+@java.exe -version >nul 2>nul
+@IF %ERRORLEVEL% NEQ 0 @GOTO failjava
+
 @goto end
+
+
+
 :fail
 @echo "FATAL: Path does not exist: %TESTPATH%"
 @pause > nul
 @exit 1
+@goto :end
+
+:failjava
+@echo "java.exe not found from PATH (needed by pakrat.jar)"
+@pause > nul
+@exit 2
+@goto :end
+
 
 :end

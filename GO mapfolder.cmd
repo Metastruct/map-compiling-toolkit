@@ -1,2 +1,2 @@
-call config.bat
-explorer "%mapfolder%"
+@call config.bat
+@explorer "%mapfolder%"

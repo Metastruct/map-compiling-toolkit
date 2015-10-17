@@ -73,11 +73,11 @@
 		}
 		"Garry's Mod MDK"
 		{
-			"GameDir"		"x:\g\steam\steamapps\sourcemods\garrysmod_mapcompile"
+			"GameDir"		"c:\location_of_game_hammer_or_game_compiling_folder"
 			"Hammer"
 			{
 				"GameData0"		"x:\g\steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\halflife2.fgd"
-				"GameData1"		"X:\do\metastruct\mapfiles\metastruct.fgd"
+				"GameData1"		"location_of/metastruct.fgd"
 				"TextureFormat"		"5"
 				"MapFormat"		"4"
 				"DefaultTextureScale"		"0.250000"

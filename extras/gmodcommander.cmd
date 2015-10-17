@@ -5,8 +5,8 @@
 
 
 
-copy /Y build_cubemaps.lua "%GameDir%"\lua\autorun\client\build_cubemaps.lua > nul
-@if ERRORLEVEL 1 goto fail
+@rem copy /Y build_cubemaps.lua "%GameDir%"\lua\autorun\client\build_cubemaps.lua > nul
+@rem @if ERRORLEVEL 1 goto fail
 copy /Y mapcomp_write_missing.lua "%GameDir%"\lua\autorun\client\mapcomp_write_missing.lua > nul
 @if ERRORLEVEL 1 goto fail
 
@@ -20,18 +20,15 @@ copy /Y mapcomp_write_missing.lua "%GameDir%"\lua\autorun\client\mapcomp_write_m
 @goto out
 
 :missing
-@rem @taskkill /T /F /IM hl2.exe 2> nul
-start /wait /min hl2.exe -game "%SteamGame%" -multirun -w 1024 -h 768 -console -dev -disableluarefresh -insecure -nohltv +map %2 +alias "exitgame quit" +con_nprint_bgalpha writemissing
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -dev -disableluarefresh -insecure -nohltv +map %2 +alias "exitgame quit" +con_nprint_bgalpha writemissing
 @goto win
 
 :cubemaps_ldr
-@rem @taskkill /T /F /IM hl2.exe 2> nul
-start /wait /min hl2.exe -game "%SteamGame%" -multirun -w 1024 -h 768 -console -dev -disableluarefresh -insecure -nohltv +map %2 +alias "exitgame quit" +con_nprint_bgalpha cubemaps +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -nodev -disableluarefresh -insecure -nohltv +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 -buildcubemaps
 @goto win
 
 :cubemaps_hdr
-@rem @taskkill /T /F /IM hl2.exe 2> nul
-start /wait /min hl2.exe -game "%SteamGame%" -multirun -w 1024 -h 768 -console -dev -disableluarefresh -insecure -nohltv +map %2 +alias "exitgame quit" +con_nprint_bgalpha cubemaps +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -nodev -disableluarefresh -insecure -nohltv +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 -buildcubemaps
 @goto win
 
 @goto win
@@ -45,5 +42,5 @@ start /wait /min hl2.exe -game "%SteamGame%" -multirun -w 1024 -h 768 -console -
 @goto out
 
 :out
-@del "%GameDir%"\lua\autorun\client\build_cubemaps.lua
+@rem @del "%GameDir%"\lua\autorun\client\build_cubemaps.lua
 @del "%GameDir%"\lua\autorun\client\mapcomp_write_missing.lua

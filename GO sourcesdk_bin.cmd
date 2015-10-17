@@ -1,2 +1,2 @@
-call config.bat
-explorer "%sourcesdk%\bin\"
+@call config.bat
+@explorer "%sourcesdk%\bin\"

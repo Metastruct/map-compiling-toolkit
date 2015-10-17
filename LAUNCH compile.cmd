@@ -178,12 +178,13 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 
 :cubemap
 @echo ================= Deleting default cubemaps ===============================
-bspzip -deletecubemaps "%GameDir%\maps\%mapname%.bsp"
+@echo SKIPPED (Not required)
+@rem bspzip -deletecubemaps "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
 :pack
 @echo ================= Packing required files to map ===========================
-pakrat.jar -auto "%mapdata%" "%GameDir%\maps\%mapname%.bsp"
+java.exe -jar pakrat.jar -auto "%mapdata%" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
 :missingcsstf
