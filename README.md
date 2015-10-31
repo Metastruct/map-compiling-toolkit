@@ -71,11 +71,13 @@ If you launch hammer using the shortcut and it asks for game to use, something i
 
 Automatic uploading
 -----
-TODO
+There is an uploader which can automate the uploading once you have managed to upload the initial version. Refer to http://wiki.garrysmod.com/page/Workshop_Publisher_Tool for additional syntax. Afraid there is no help for this part, but it's to make repeat uploading faster, not the initial uploading.
 
 CS:S / TF2 Bundling 
 -----
-TODO
+There exists a lua script which runs exclusively only in GMod, which can bundle the game VMTs into the map for missing material replacement purposes to reduce checkerboards. It doesn't know about vmt syntax yet so you shouldn't use it as it won't bundle everything missing. It also requires lua code, which has not been finished yet to make of any actual use. 
+
+Does not work outside GMod. Does not support models bundling.
 	
 TF2 + CSS+GMod
 -----
