@@ -5,8 +5,12 @@
 
 
 
-@rem copy /Y build_cubemaps.lua "%GameDir%"\lua\autorun\client\build_cubemaps.lua > nul
-@rem @if ERRORLEVEL 1 goto fail
+copy /Y build_cubemaps.lua "%GameDir%"\lua\autorun\client\build_cubemaps.lua > nul
+@if ERRORLEVEL 1 goto fail
+
+copy /Y gmodcommander.cfg "%GameDir%"\cfg\gmodcommander.cfg > nul
+@if ERRORLEVEL 1 goto fail
+
 copy /Y mapcomp_write_missing.lua "%GameDir%"\lua\autorun\client\mapcomp_write_missing.lua > nul
 @if ERRORLEVEL 1 goto fail
 
@@ -20,15 +24,17 @@ copy /Y mapcomp_write_missing.lua "%GameDir%"\lua\autorun\client\mapcomp_write_m
 @goto out
 
 :missing
-start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -dev -disableluarefresh -insecure -nohltv +map %2 +alias "exitgame quit" +con_nprint_bgalpha writemissing
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -dev -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +alias "exitgame quit" +con_nprint_bgalpha writemissing
 @goto win
 
 :cubemaps_ldr
-start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -nodev -disableluarefresh -insecure -nohltv +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 -buildcubemaps
+@rem start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 -buildcubemaps
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 :cubemaps_hdr
-start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -nodev -disableluarefresh -insecure -nohltv +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 -buildcubemaps
+@rem start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 -buildcubemaps
+start /wait /min hl2.exe -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 @goto win
