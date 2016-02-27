@@ -58,24 +58,20 @@ Setting up
 		**Extra**
 		Copy extras/vbsp_patcher.exe to where vbsp.exe is and copy vbsp.exe to vbsp_patched.exe. Run and press patch.
 
-Notes
+Troubleshooting
 -----
-The map files are in read-only mode.
-	This is to prevent unmergeable changes. To make it writeable again, lock it.
-	After doing your changes, commit them and unlock the file again. 
-	You can read more about this in the svn book, section "Locking" (you should already know this !!):
-	http://svnbook.red-bean.com/en/1.5/svn-book.html#svn.advanced.locking
 
-If you launch hammer using the shortcut and it asks for game to use, something is wrong.
-	
+ - If hammer shortcut asks for a game to use, something is wrong.
+   - TODO: How to fix?
 
 Automatic uploading
 -----
-TODO
+There is a system to upload to workshop. After it is configured you can ideally just hit upload after compile test cycle and it should update the workshop addon. Help is TODO.
 
-CS:S / TF2 Bundling 
+CS:S / TF2 Bundling (TODO)
 -----
-TODO
+CS:S and TF2 VMTs can be bundled into the map to allow players see devtexture instead of checkerboard. This needs lua too, though. This feature is enabled by default so you may want to disable it to save some space.
+
 	
 TF2 + CSS+GMod
 -----
@@ -96,3 +92,14 @@ game_hammer/gameinfo.txt:
 		//game		".../Team Fortress 2/tf/tf2_misc.vpk"
 
 tf2_misc is a folder where tf_misc has been extracted with GCFScape and from materials folder the "backpack" folder has been removed. Something else may need to be removed in the future.
+
+
+
+
+Metastruct specific
+-----
+The map files are in read-only mode.
+	This is to prevent unmergeable changes. To make it writeable again, lock it.
+	After doing your changes, commit them and unlock the file again. 
+	You can read more about this in the svn book, section "Locking" (you should already know this !!):
+	http://svnbook.red-bean.com/en/1.5/svn-book.html#svn.advanced.locking
