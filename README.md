@@ -62,7 +62,7 @@ Troubleshooting
 -----
 
  - If hammer shortcut asks for a game to use, something is wrong.
-   - TODO: How to fix?
+   - If hammer does start, look at hammer's "console" to see if it failed to find for example the VPROJECT or TF2.
 
 Automatic uploading
 -----
