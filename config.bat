@@ -3,13 +3,11 @@
 @rem FILL THAT INSTEAD!!
 
 @set SteamAppUser=dummy
+@set HammerParams=-nop4
 
 @call user_config.cmd
 
 @set SteamUser=%SteamAppUser%
-
-
-
 
 @rem Actual steam path
 @set SteamPath=C:\Program Files (x86)\Steam
