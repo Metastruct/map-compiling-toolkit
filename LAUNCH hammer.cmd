@@ -5,6 +5,7 @@
 @reg ADD "HKCU\Software\Valve\Hammer\3D Views" /v ModelDistance /t REG_DWORD /d 15000 /f
 @reg ADD "HKCU\Software\Valve\Hammer\3D Views" /v DetailDistance /t REG_DWORD /d 5000 /f
 @reg ADD "HKCU\Software\Valve\Hammer\2D Views" /v RotateConstrain /t REG_DWORD /d 1 /f
+@reg ADD "HKCU\Software\Valve\Hammer\Splitter" /v "DrawType0,0" /t REG_DWORD /d 9 /f
 
 @cd /D "%sourcesdk%\bin"
 @set SteamAppId=243750
@@ -13,6 +14,6 @@
 
 @echo Project: %VProject%
 
-@start hammer.exe %HammerParams%
+start hammer.exe %HammerParams%
 
-ping 127.0.0.1 -n 2 > nul
+@ping 127.0.0.1 -n 2 > nul
