@@ -1,4 +1,6 @@
-@set VRADHDR=-softsun 2 -final
+@set VRADHDR=-softsun 15 -bounce 32 -final
+@rem @set VRADHDR=-softsun 15 -bounce 32 -StaticPropPolys -StaticPropLighting -final
+@rem todo move to configs
 @set VRADLDR=%VRADHDR%
 @set TESTBUILD=0
 @set AUTO_UPLOAD_MAP=0
@@ -150,7 +152,7 @@ if not %TESTBUILD%==1 vvis.exe -low "%mapfolder%\%mapname%"
 :vrad
 :vradldr
 @echo ================= VRAD LDR ================================================
-if not %TESTBUILD%==1 vrad.exe -low %VRADLDR% -softsun 2 -ldr "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 vrad.exe -low %VRADLDR% -ldr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -266,9 +268,9 @@ call extras\gmodcommander.cmd cubemaps_ldr "%mapname%"
 start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.bsp"
 start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
 
-@echo ================= TESTING MAP (LDR) ================= 
+@echo ================= TESTING MAP (HDR) ================= 
 
-if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1024 -h 768 +sv_noclipspeed 25 +mat_hdr_level 0 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
+if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1024 -h 768 +sv_noclipspeed 25 +mat_hdr_level 2 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
 bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
 
 

@@ -1,3 +1,4 @@
+@cd /d "%~dp0"
 @call config.bat
 
 @echo Tweaking max draw distances...
@@ -14,6 +15,6 @@
 
 @echo Project: %VProject%
 
-start hammer.exe %HammerParams%
+start hammer.exe %HammerParams% %*
 
-@ping 127.0.0.1 -n 2 > nul
+@ping 127.0.0.1 -n 3 > nul
