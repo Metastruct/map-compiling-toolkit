@@ -15,6 +15,6 @@
 
 @echo Project: %VProject%
 
-start hammer.exe %HammerParams% %*
+start hammer.exe %HammerParams% %* -dxlevel 81
 
 @ping 127.0.0.1 -n 3 > nul
