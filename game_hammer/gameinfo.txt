@@ -16,9 +16,10 @@
 	advcrosshair 1
 
 	"GameData"		"X:/do/gmod/metastruct/mapfiles/metastruct.fgd"
-	"GameData0"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/base.fgd"
-	"GameData1"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/cstrike.fgd"
-	"GameData2"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/halflife2.fgd"
+	"GameData0"		"X:/g/steamlib/steamapps/common/GarrysMod/bin/garrysmod.fgd"
+	"GameData1"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/base.fgd"
+	"GameData2"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/cstrike.fgd"
+	"GameData3"		"x:/g/steam/steamapps/common/Source SDK Base 2013 Multiplayer/bin/halflife2.fgd"
 	"InstancePath" 	"X:/do/GMod/metastruct/mapfiles"
 	
 	FileSystem
