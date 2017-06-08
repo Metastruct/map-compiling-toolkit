@@ -43,6 +43,9 @@
 @rem workshop map id
 @set mapwsid=0
 
+@rem no addons on gmodcommander by default
+set GCNOADDONS=-noaddons
+
 @rem Should the compiler bundle missing materials
 @set NO_MISSING_BUNDLING=0
 
