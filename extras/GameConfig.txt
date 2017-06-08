@@ -78,6 +78,7 @@
 			{
 				"GameData0"		"x:\g\steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\halflife2.fgd"
 				"GameData1"		"location_of/metastruct.fgd"
+				"GameData2"		"X:/g/steamlib/steamapps/common/GarrysMod/bin/garrysmod.fgd"
 				"TextureFormat"		"5"
 				"MapFormat"		"4"
 				"DefaultTextureScale"		"0.250000"
