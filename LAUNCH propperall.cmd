@@ -7,8 +7,10 @@
 @title Propper Batch Compiler
 
 @set QC_STORAGE=%mapfolder%\propper
-
 @set VBSPNAME=vbsp_propper
+@call config.bat
+@cd /d "%CMD_LC_ROOT%"
+
 @%VBSPNAME% >nul 2>nul
 @if ERRORLEVEL 9009 goto nofound
 @goto found
@@ -22,7 +24,10 @@
 :found
 @cd /d "%mapfolder%\propper"
 @echo.
-@for /r %%i in (*.vmf) do %VBSPNAME% %%i > "%%i.log"
+@for /r %%i in (*.vmf) do @(
+	@echo Processing %%i
+	@%VBSPNAME% %%i > "%%i.log"
+)
 @if ERRORLEVEL 1 goto failed
 @goto win
 
@@ -36,12 +41,11 @@
 
 
 
-
-
 :win
 @echo =======================
 @echo ====== FINISHED =======
 @echo =======================
+@pause > nul
 
 @goto gtfo
 

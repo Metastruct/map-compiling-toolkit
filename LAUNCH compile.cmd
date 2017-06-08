@@ -1,4 +1,5 @@
-@set VRADHDR=-softsun 15 -bounce 32 -final
+@set VRADHDR=-softsun 25 -bounce 24
+@rem -StaticPropSampleScale 0.25 -StaticPropLighting
 @rem @set VRADHDR=-softsun 15 -bounce 32 -StaticPropPolys -StaticPropLighting -final
 @rem todo move to configs
 @set VRADLDR=%VRADHDR%
@@ -263,10 +264,18 @@ call extras\gmodcommander.cmd cubemaps_ldr "%mapname%"
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
 
+:navmesh
+@echo ================= Generating navmesh =================
+@cd /d "%CMD_LC_ROOT%"
+@call extras\gmodcommander.cmd navmesh "%mapname%"
+@if ERRORLEVEL 1 goto failed
+@cd /d "%CMD_LC_ROOT%"
+
 
 @echo ================= bzip2 Packing ================= 
 start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.bsp"
 start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
+start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
 
 @echo ================= TESTING MAP (HDR) ================= 
 

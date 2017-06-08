@@ -193,7 +193,6 @@
 		1 : "auto-smooth"
 		2 : "Use Hammer's smoothing groups only"
 	]
-	sourcefolder(string) : "Source folder" : "c:/propsource" : "Where you want to keep your .qc and .smd files. The final directory will be <sourcefolder>/<modelname>."
 	smoothangle(integer) : "Smoothing threshold" : 45 : "If auto-smooth is enabled, Edges flatter than this angle will appear smooth. Pick from 0 to 180."
 	snaptogrid(choices) : "Snap to Hammer grid" : "0" : "Causes every vertex to be snapped to the nearest grid point." =
 	[

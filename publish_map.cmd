@@ -17,7 +17,7 @@
 @del /S /Q "%mapfolder%\%mapfile%\maps\*.nav"
 @del /S /Q "%mapfolder%\%mapfile%\maps\graphs\*.ain"
 
-
+@echo Uploading %mapname%
 @if not exist "%GameDir%\maps\%mapname%.bsp" @(
 	@echo Missing map!
 	@goto fail
