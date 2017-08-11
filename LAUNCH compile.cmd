@@ -250,6 +250,8 @@ echo Skipping packing. "%mapfile%.bspzip" not found.
 :extrabspzip_ok
 
 
+
+
 :ldr
 @echo ================= Generating LDR Cubemaps =================
 @cd /d "%CMD_LC_ROOT%"
@@ -266,16 +268,34 @@ call extras\gmodcommander.cmd cubemaps_ldr "%mapname%"
 
 :navmesh
 @echo ================= Generating navmesh =================
+
+@if not exist "%mapfolder%\%mapfile%.lm.txt" @goto navmesh_noseeds
+
 @cd /d "%CMD_LC_ROOT%"
+@copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
 @call extras\gmodcommander.cmd navmesh "%mapname%"
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
 
+goto navmesh_end
+:navmesh_noseeds
+@echo SKIPPING: Seed file missing "%mapfolder%\%mapfile%.lm.txt"
+:navmesh_end
 
-@echo ================= bzip2 Packing ================= 
-start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.bsp"
-start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
-start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
+:docompress
+@echo ================= Compressing to .bz2 files for fastdl ================= 
+@start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.bsp"
+@start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
+
+@set "filename=%GameDir%\maps\%mapname%.nav"
+set size=0
+@for /f %%A in (%filename%) do set size=%%~zA
+@if %size% GTR 2048 @goto navok
+@echo NAVMESH GENERATION FAILED
+@goto navcskip
+:navok
+@start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
+:navcskip
 
 @echo ================= TESTING MAP (HDR) ================= 
 

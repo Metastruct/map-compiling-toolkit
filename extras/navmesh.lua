@@ -1,4 +1,17 @@
-if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then return end
+local navmeshregen
+
+pcall(require,'landmark')
+if not landmark or not landmark.get then
+	system.FlashWindow()
+	print"UNABLE TO LOAD LANDMARK MODULE"
+end
+
+if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then
+	navmeshregen=true
+	if GetConVar("con_nprint_bgalpha"):GetString()~="navmeshregen" then
+		return 
+	end
+end
 
 local i=68
 hook.Add("Think","agwegwegg",function()
@@ -7,20 +20,47 @@ hook.Add("Think","agwegwegg",function()
 	hook.Remove("Think","agwegwegg")
 	
 	print"\n!!!!!BUILDING NAVMESH!!!!!!!!\n"
+	if not navmeshregen then
+		if not navmesh.IsLoaded() then navmesh.Load() end
 		
-	if not navmesh.IsLoaded() then navmesh.Load() end
-	
-	if navmesh.IsLoaded() then
-		print"navmesh found, leaving..."
-		RunConsoleCommand("exitgame")
-		return 
+		if navmesh.IsLoaded() then
+			print"navmesh found, leaving..."
+			RunConsoleCommand("exitgame")
+			return
+		end
 	end
-
+	
+	if not file.Exists("navmesh_landmarks.txt", 'DATA') then
+		print "navmesh_landmarks.txt MISSING"
+		system.FlashWindow()
+		return
+	end
+	
 	--TODO
-	local f = file.Read("navmesh_seed.txt",'DATA')
-	for v in (f or ""):gmatch'[^\r\n]+' do
-		if v and v:find"%d %d" then
-			print("seeding",v,navmesh.AddWalkableSeed(Vector(v),Vector(0,0,1)))
+	for lm in file.Read("navmesh_landmarks.txt", 'DATA'):gmatch'[^\r\n]+' do
+		local name, offset = lm:match'^([^%,]+)%,?(.*)$'
+		local err="unknown error"
+		if name then
+			local offset = offset and #offset > 3 and offset:Trim():find"^%d+ %d+ %d+$" and Vector(offset:Trim()) or Vector(0,0,0)
+			local pos = landmark.get(name:Trim())
+
+			if pos then
+				pos = pos + offset
+				local tr = util.TraceLine{
+					start = pos,
+					endpos = pos - Vector(0, 0, 512)
+				}
+				if tr.Hit then 
+					navmesh.AddWalkableSeed(tr.HitPos, tr.HitNormal)
+					debugoverlay.Cross(tr.HitPos,128,120,Color(255,255,255),true)
+					err=false
+				else err="trace did not hit" end
+
+			else err="landmark missing or invalid" end
+		else err="could not parse name" end
+		if err then
+			system.FlashWindow()
+			print(("Adding seed did not succeed: %s %q"):format(err,lm))
 		end
 	end
 	print("begin",navmesh.BeginGeneration())

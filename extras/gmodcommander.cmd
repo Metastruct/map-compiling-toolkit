@@ -17,6 +17,9 @@ copy /Y mapcomp_write_missing.lua "%GameDir%"\lua\autorun\client\mapcomp_write_m
 copy /Y navmesh.lua "%GameDir%"\lua\autorun\server\navmesh.lua > nul
 @if ERRORLEVEL 1 goto fail
 
+copy /Y landmark.lua "%GameDir%"\lua\includes\modules\landmark.lua > nul
+@if ERRORLEVEL 1 goto fail
+
 @cd /D %GameExeDir%
 @If "%1"=="missing" @goto missing
 @If "%1"=="cubemaps_ldr" @goto cubemaps_ldr
