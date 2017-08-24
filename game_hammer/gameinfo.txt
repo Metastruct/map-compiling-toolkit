@@ -11,7 +11,7 @@
 		"test_hardware"		1
 	}
 	nodegraph 0
-	GameData	"tf.fgd"
+	GameData	"X:/g/steamlib/steamapps/common/Team Fortress 2/bin/tf.fgd"
 	InstancePath "maps/instances/"
 	advcrosshair 1
 

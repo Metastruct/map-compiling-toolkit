@@ -3,7 +3,7 @@
 	game	"GMod"
 	type multiplayer_only
 	nodegraph 0
-	GameData	"tf.fgd"
+	GameData	"X:/g/steamlib/steamapps/common/Team Fortress 2/bin/tf.fgd"
 	InstancePath "maps/instances/"
 
 	"GameData"		"X:/do/gmod/metastruct/mapfiles/metastruct.fgd"
