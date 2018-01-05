@@ -218,5 +218,7 @@ concommand.Add("retry_command",function()
 end,nil,"retry missing writing command")
 
 local ok,err=pcall(retry)
-print("FAILED: ",err)
-print"To retry run command retry_command"
+if not ok then
+	print("FAILED: ",err)
+	print"To retry run command retry_command"
+end

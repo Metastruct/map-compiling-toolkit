@@ -5,7 +5,7 @@
 @set VRADLDR=%VRADHDR%
 @set TESTBUILD=0
 @set AUTO_UPLOAD_MAP=0
-
+@set ORIGFOLDER=%CD%
 @rem Store current folder
 @set CMD_LC_ROOT=%~dp0
 
@@ -15,10 +15,12 @@
 @title Map Batch Compiler
 
 
+@set CUSTOMCOMPILERS="%CMD_LC_ROOT%\bin"
 
 
-
-
+@DEL "%CUSTOMCOMPILERS%" /S /Q /F >nul
+@xcopy "%sourcesdk%\bin" "%CUSTOMCOMPILERS%" /k/r/e/i/s/c/h/f/o/x/y/q
+@xcopy "%CMD_LC_ROOT%extras\compilers" "%CUSTOMCOMPILERS%" /k/r/e/i/s/c/h/f/o/x/y/q
 
 @call build_version.bat 1
 @cd /d "%CMD_LC_ROOT%"
@@ -31,6 +33,8 @@
 @cd /d "%CMD_LC_ROOT%"
 @call config.bat
 @cd /d "%CMD_LC_ROOT%"
+
+@del /S /Q "%CMD_LC_ROOT%\bspzip_out.log"
 
 @if "%1"=="b" @goto buildnext
 @if "%1"=="B" @goto buildnext
@@ -100,7 +104,7 @@ set TESTBUILD=1
 
 :docopy
 @set targetvmf=%mapfolder%\%mapname%.vmf
-COPY "%mapfolder%\%mapfile%.vmf" "%targetvmf%"
+@COPY "%mapfolder%\%mapfile%.vmf" "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -128,16 +132,9 @@ vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 :vbsp
 @echo ================= VBSP ====================================================
 
-@set VBSPNAME=vbsp_patched.exe
-@%VBSPNAME% >nul 2>nul
-@if ERRORLEVEL 9009 goto nopatched
-@goto patched
-:nopatched
-@echo WARNING: vbsp_patched.exe could not be found
-@set VBSPNAME=vbsp.exe
-:patched
 
-%VBSPNAME% -leaktest -low "%mapfolder%\%mapname%"
+
+"%CUSTOMCOMPILERS%\vbsp.exe" -AllowDynamicPropsAsStatic -leaktest -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -146,20 +143,20 @@ vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 :vvis
 @echo ================= VVIS ====================================================
 
-if not %TESTBUILD%==1 vvis.exe -low "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
 :vrad
 :vradldr
 @echo ================= VRAD LDR ================================================
-if not %TESTBUILD%==1 vrad.exe -low %VRADLDR% -ldr "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vrad.exe" -AllowDynamicPropsAsStatic -AllowDX90VTX -IgnoreModelVersions -low %VRADLDR% -ldr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
 :vradhdr
 @echo ================= VRAD HDR ================================================
-if not %TESTBUILD%==1 vrad.exe -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vrad.exe" -AllowDynamicPropsAsStatic -AllowDX90VTX -IgnoreModelVersions -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -187,7 +184,19 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 
 :pack
 @echo ================= Packing required files to map ===========================
-java.exe -jar pakrat.jar -auto "%mapdata%" "%GameDir%\maps\%mapname%.bsp"
+@cd /d "%CMD_LC_ROOT%"
+extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "%GameDir%\maps\%mapname%.bsp.reslister"
+@if ERRORLEVEL 1 goto failed
+@cd "%mapdata%"
+bspzip -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
+@if ERRORLEVEL 1 goto failed
+@cd /d "%CMD_LC_ROOT%"
+
+@move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"
+@if ERRORLEVEL 1 goto failed
+@del /Q /F "%GameDir%\maps\%mapname%.bsp"
+@if ERRORLEVEL 1 goto failed
+move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
 :missingcsstf
@@ -202,17 +211,18 @@ java.exe -jar pakrat.jar -auto "%mapdata%" "%GameDir%\maps\%mapname%.bsp"
 
 @cd /d "%CMD_LC_ROOT%"
 @call extras\gmodcommander.cmd missing "%mapname%"
-@if ERRORLEVEL 1 goto failed
+@if ERRORLEVEL 1 goto missingcsstf_fail
 @cd /d "%CMD_LC_ROOT%"
 
+@echo Bspzipping the potentially missing
 
 @cd "%GameDir%\data"
 bspzip -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\data\addlist.txt" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
 @if ERRORLEVEL 1 goto failed
 
-@move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"
+move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"
 @if ERRORLEVEL 1 goto failed
-@del /Q /F "%GameDir%\maps\%mapname%.bsp"
+del /Q /F "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
@@ -222,6 +232,8 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @del /Q /F "%GameDir%\data\addlist_src.txt"
 
 @goto missingcsstf_finish
+:missingcsstf_fail
+echo ">>>>>>> !!!FAILED!!! (non fatal) "
 :missingcsstf_skip
 echo Skipping...
 :missingcsstf_finish
@@ -288,10 +300,10 @@ goto navmesh_end
 @start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
 
 @set "filename=%GameDir%\maps\%mapname%.nav"
-set size=0
+@set size=0
 @for /f %%A in (%filename%) do set size=%%~zA
-@if %size% GTR 2048 @goto navok
-@echo NAVMESH GENERATION FAILED
+@if %size% GTR 1 @goto navok
+@echo "NAVMESH GENERATION FAILED. Size=%size%"
 @goto navcskip
 :navok
 @start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
@@ -356,4 +368,5 @@ bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
 @goto gtfo
 
 :gtfo
+cd "%ORIGFOLDER%"
 @echo.

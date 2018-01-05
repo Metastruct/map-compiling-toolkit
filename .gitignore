@@ -1,2 +1,8 @@
 /*.log
 /user_config.cmd
+/VIDE
+/game_compiling
+/compilepal
+/bin
+
+/extras/hammerlua/lua/winapiffi

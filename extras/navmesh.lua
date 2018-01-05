@@ -13,6 +13,8 @@ if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then
 	end
 end
 
+RunConsoleCommand("con_nprint_bgalpha","")
+
 local i=68
 hook.Add("Think","agwegwegg",function()
 	i=i-1
@@ -24,9 +26,13 @@ hook.Add("Think","agwegwegg",function()
 		if not navmesh.IsLoaded() then navmesh.Load() end
 		
 		if navmesh.IsLoaded() then
-			print"navmesh found, leaving..."
-			RunConsoleCommand("exitgame")
-			return
+			if (file.Size("maps/"..game.GetMap()..'.nav','GAME') or -1) > 1 then
+				print"navmesh found, leaving..."
+				RunConsoleCommand("exitgame")
+				return
+			else
+				print"navmesh oversmall, regenerating"
+			end
 		end
 	end
 	
