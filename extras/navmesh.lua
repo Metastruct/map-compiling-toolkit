@@ -1,9 +1,23 @@
+print"navmesh.lua running..."
 local navmeshregen
-
 pcall(require,'landmark')
 if not landmark or not landmark.get then
 	system.FlashWindow()
 	print"UNABLE TO LOAD LANDMARK MODULE"
+end
+
+if GetConVar("con_nprint_bgalpha"):GetString()=="quit" then
+	print "quitting..."
+	RunConsoleCommand("exitgame")
+	if CLIENT then
+		LocalPlayer():ConCommand('exitgame',true)
+	else
+		player.GetHumans()[1]:ConCommand('exitgame',true)
+	end
+	if game.ConsoleCommand then
+		game.ConsoleCommand( "exitgame\n" )
+	end	
+	return
 end
 
 if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then
@@ -13,7 +27,7 @@ if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then
 	end
 end
 
-RunConsoleCommand("con_nprint_bgalpha","")
+RunConsoleCommand("con_nprint_bgalpha","quit")
 
 local i=68
 hook.Add("Think","agwegwegg",function()
@@ -73,9 +87,16 @@ hook.Add("Think","agwegwegg",function()
 	
 	hook.Add("ShutDown","agwegwegg",function()
 		print"Quitting...?"
-		
+		system.FlashWindow()
 		RunConsoleCommand("exitgame")
-		
+		if CLIENT then
+			LocalPlayer():ConCommand('exitgame',true)
+		else
+			player.GetHumans()[1]:ConCommand('exitgame',true)
+		end
+		if game.ConsoleCommand then
+			game.ConsoleCommand( "exitgame\n" )
+		end
 	end)
 	timer.Simple(1,function() print"built test?" end)
 	timer.Simple(60*2,function()

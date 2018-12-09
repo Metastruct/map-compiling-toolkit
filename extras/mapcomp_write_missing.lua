@@ -91,6 +91,7 @@ local function retry()
 		if cs then return 'cstrike' end
 		
 		if file.Exists(txt,'tf') then return 'tf' end
+		if file.Exists(txt,'csgo') then return 'csgo' end
 		
 		if file.Exists(txt,'episodic') then return 'episodic' end
 		if file.Exists(txt,'ep2') then return 'ep2' end
@@ -132,9 +133,20 @@ local function retry()
 				local l,r=dat:find("\0",1,true)
 				assert(l,r)
 				local path=dat:sub(1,l-1)
+				local ispatch = path:find"^maps/"
+				if ispatch then
 				
+					-- So far no need to parse the vmt it seems
+					local realpath = path:match("^maps/[^/]+/(.*)_%-?%d+_%-?%d+_%-?%d+$")
+					if realpath then
+						path=realpath
+						ispatch=false
+					else
+						print("parsefail",path)
+					end
+				end
 				total_count=total_count+1
-				if not path:find"^maps/" and not path:find"^decals/" then
+				if not ispatch and not path:find"^decals/" then
 					paths[#paths+1]=path
 				end
 				

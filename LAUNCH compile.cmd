@@ -15,7 +15,7 @@
 @title Map Batch Compiler
 
 
-@set CUSTOMCOMPILERS="%CMD_LC_ROOT%\bin"
+@set CUSTOMCOMPILERS="%CMD_LC_ROOT%bin"
 
 
 @DEL "%CUSTOMCOMPILERS%" /S /Q /F >nul
@@ -147,7 +147,10 @@ if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
+
 :vrad
+@if %NOLDR%==1 goto vradhdr
+
 :vradldr
 @echo ================= VRAD LDR ================================================
 if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vrad.exe" -AllowDynamicPropsAsStatic -AllowDX90VTX -IgnoreModelVersions -low %VRADLDR% -ldr "%mapfolder%\%mapname%"
@@ -233,9 +236,9 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 
 @goto missingcsstf_finish
 :missingcsstf_fail
-echo ">>>>>>> !!!FAILED!!! (non fatal) "
+@echo ">>>>>>> !!!FAILED!!! (non fatal) "
 :missingcsstf_skip
-echo Skipping...
+@echo Skipping...
 :missingcsstf_finish
 
 :extrabspzip
@@ -262,20 +265,28 @@ echo Skipping packing. "%mapfile%.bspzip" not found.
 :extrabspzip_ok
 
 
-
+@if %NOLDR%==1 goto hdr
 
 :ldr
 @echo ================= Generating LDR Cubemaps =================
 @cd /d "%CMD_LC_ROOT%"
 call extras\gmodcommander.cmd cubemaps_ldr "%mapname%"
-@if ERRORLEVEL 1 goto failed
+@if ERRORLEVEL 1 goto ldrfail
+goto ldrok
+:ldrfail
+@echo WARNING: LDR builder CRASHED (ignoring). The map may still work.
+:ldrok
 @cd /d "%CMD_LC_ROOT%"
 
 :hdr
 @echo ================= Generating HDR Cubemaps =================
 @cd /d "%CMD_LC_ROOT%"
 @call extras\gmodcommander.cmd cubemaps_hdr "%mapname%"
-@if ERRORLEVEL 1 goto failed
+@if ERRORLEVEL 1 goto hdrfail
+goto hdrok
+:hdrfail
+@echo WARNING: HDR builder CRASHED (ignoring). The map may still work.
+:hdrok
 @cd /d "%CMD_LC_ROOT%"
 
 :navmesh

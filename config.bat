@@ -5,6 +5,8 @@
 @set SteamAppUser=dummy
 @set HammerParams=-nop4
 
+@set NOLDR=0
+
 @call user_config.cmd
 
 @set SteamUser=%SteamAppUser%
@@ -122,8 +124,8 @@
 @set TESTPATH=%SteamPath%
 @IF NOT EXIST "%TESTPATH%" @GOTO fail
 
-@java.exe -version >nul 2>nul
-@IF %ERRORLEVEL% NEQ 0 @GOTO failjava
+@rem @java.exe -version >nul 2>nul
+@rem @IF %ERRORLEVEL% NEQ 0 @GOTO failjava
 
 @goto end
 
