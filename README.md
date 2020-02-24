@@ -30,7 +30,9 @@ Requirements
 
 Setting up
 -------------
-- Look inside metamap_devenv.cmd and run it
+- Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
+   - Place it on a path that has no spaces. It will download more folders to that folder.
+   - Run it. Hope it finds everything automatically.
 - Configure the opened user_config.cmd! (look inside common.cmd for configurable params)
 - You're on your own now, maybe attempt launch hammer
 
