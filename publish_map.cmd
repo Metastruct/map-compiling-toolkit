@@ -1,7 +1,7 @@
 @set CMD_LC_ROOT=%~dp0
 @cd /d "%CMD_LC_ROOT%"
-@call config.bat
-@call build_version.bat
+@call common.cmd
+@call build_version.cmd
 @cd /d "%CMD_LC_ROOT%"
 
 @if not exist "%mapfolder%\%mapfile%" @mkdir "%mapfolder%\%mapfile%"

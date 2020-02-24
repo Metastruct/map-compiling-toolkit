@@ -8,30 +8,25 @@
 @set ORIGFOLDER=%CD%
 @rem Store current folder
 @set CMD_LC_ROOT=%~dp0
+@set bspzipexe=bspzip
 
 @cd /d "%CMD_LC_ROOT%"
-@call config.bat
+@call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 @title Map Batch Compiler
 
+@set compilers_dir=%sourcesdk%\bin
 
-@set CUSTOMCOMPILERS="%CMD_LC_ROOT%bin"
-
-
-@DEL "%CUSTOMCOMPILERS%" /S /Q /F >nul
-@xcopy "%sourcesdk%\bin" "%CUSTOMCOMPILERS%" /k/r/e/i/s/c/h/f/o/x/y/q
-@xcopy "%CMD_LC_ROOT%extras\compilers" "%CUSTOMCOMPILERS%" /k/r/e/i/s/c/h/f/o/x/y/q
-
-@call build_version.bat 1
+@call build_version.cmd 1
 @cd /d "%CMD_LC_ROOT%"
-@call config.bat
+@call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 @echo Version to build: %BUILD_VERSION%
 @echo In: %mapfile%.vmf
 @echo Out: %mapname%.bsp
-@call build_version.bat -1
+@call build_version.cmd -1
 @cd /d "%CMD_LC_ROOT%"
-@call config.bat
+@call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 
 @del /S /Q "%CMD_LC_ROOT%\bspzip_out.log"
@@ -71,16 +66,16 @@ set TESTBUILD=1
 
 :buildnext
 @cd /d "%CMD_LC_ROOT%"
-@call build_version.bat 1
+@call build_version.cmd 1
 @cd /d "%CMD_LC_ROOT%"
-@call config.bat
+@call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 
 
 @goto dobuild
 
 :buildprev
-@call build_version.bat
+@call build_version.cmd
 @cd /d "%CMD_LC_ROOT%"
 @echo Rebuilding version %BUILD_VERSION%.
 @goto dobuild
@@ -116,7 +111,7 @@ set TESTBUILD=1
 
 :vmfii
 @echo ================= VMF Merging =================
-vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
+extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -133,8 +128,8 @@ vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 @echo ================= VBSP ====================================================
 
 
-
-"%CUSTOMCOMPILERS%\vbsp.exe" -AllowDynamicPropsAsStatic -leaktest -low "%mapfolder%\%mapname%"
+@echo VProject %VProject%
+"%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic -leaktest -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -143,7 +138,7 @@ vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 :vvis
 @echo ================= VVIS ====================================================
 
-if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vvis.exe" -low "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%compilers_dir%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -153,13 +148,13 @@ if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vvis.exe" -low "%mapfolder%\%mapname%"
 
 :vradldr
 @echo ================= VRAD LDR ================================================
-if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vrad.exe" -AllowDynamicPropsAsStatic -AllowDX90VTX -IgnoreModelVersions -low %VRADLDR% -ldr "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADLDR% -noskyboxrecurse -ldr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
 :vradhdr
 @echo ================= VRAD HDR ================================================
-if not %TESTBUILD%==1 "%CUSTOMCOMPILERS%\vrad.exe" -AllowDynamicPropsAsStatic -AllowDX90VTX -IgnoreModelVersions -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
+if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
@@ -191,7 +186,7 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "%GameDir%\maps\%mapname%.bsp.reslister"
 @if ERRORLEVEL 1 goto failed
 @cd "%mapdata%"
-bspzip -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
+"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
 
@@ -220,7 +215,7 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @echo Bspzipping the potentially missing
 
 @cd "%GameDir%\data"
-bspzip -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\data\addlist.txt" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
+"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\data\addlist.txt" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
 @if ERRORLEVEL 1 goto failed
 
 move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"
@@ -249,7 +244,7 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @if not exist "%mapfolder%\%mapfile%.bspzip" @goto extrabspzip_skip
 
 @cd "%mapdata%"
-bspzip -addlist "%GameDir%\maps\%mapname%.bsp" "%mapfolder%\%mapfile%.bspzip" "%GameDir%\maps\%mapname%.bsp.new" 
+"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%mapfolder%\%mapfile%.bspzip" "%GameDir%\maps\%mapname%.bsp.new" 
 @rem >> "%CMD_LC_ROOT%\bspzip_out.log"
 @if ERRORLEVEL 1 goto failed
 

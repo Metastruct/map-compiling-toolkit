@@ -9,14 +9,25 @@ end
 if GetConVar("con_nprint_bgalpha"):GetString()=="quit" then
 	print "quitting..."
 	RunConsoleCommand("exitgame")
-	if CLIENT then
-		LocalPlayer():ConCommand('exitgame',true)
-	else
-		player.GetHumans()[1]:ConCommand('exitgame',true)
-	end
 	if game.ConsoleCommand then
 		game.ConsoleCommand( "exitgame\n" )
-	end	
+	end
+	if CLIENT then
+		FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
+	end
+	
+	timer.Simple(5,function()
+	
+		RunConsoleCommand("exitgame")
+		if game.ConsoleCommand then
+			game.ConsoleCommand( "exitgame\n" )
+		end
+		if CLIENT then
+			FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
+		end
+	
+	end)
+	
 	return
 end
 
@@ -79,7 +90,7 @@ hook.Add("Think","agwegwegg",function()
 			else err="landmark missing or invalid" end
 		else err="could not parse name" end
 		if err then
-			system.FlashWindow()
+		system.FlashWindow = system.FlashWindow or function() print("WTF?",SERVER,CLIENT,MENU) end
 			print(("Adding seed did not succeed: %s %q"):format(err,lm))
 		end
 	end
@@ -87,6 +98,7 @@ hook.Add("Think","agwegwegg",function()
 	
 	hook.Add("ShutDown","agwegwegg",function()
 		print"Quitting...?"
+		system.FlashWindow = system.FlashWindow or function() print("WTF?",SERVER,CLIENT,MENU) end
 		system.FlashWindow()
 		RunConsoleCommand("exitgame")
 		if CLIENT then

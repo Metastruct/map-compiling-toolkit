@@ -93,13 +93,3 @@ game_hammer/gameinfo.txt:
 
 tf2_misc is a folder where tf_misc has been extracted with GCFScape and from materials folder the "backpack" folder has been removed. Something else may need to be removed in the future.
 
-
-
-
-Metastruct specific
------
-The map files are in read-only mode.
-	This is to prevent unmergeable changes. To make it writeable again, lock it.
-	After doing your changes, commit them and unlock the file again. 
-	You can read more about this in the svn book, section "Locking" (you should already know this !!):
-	http://svnbook.red-bean.com/en/1.5/svn-book.html#svn.advanced.locking

@@ -1,6 +1,8 @@
 @cd /d "%~dp0"
 @cd ..
-@call config.bat
+@call common.cmd
+@set GAME_EXE=%GameExeDir%\bin\win64\gmod.exe
+@call common.cmd
 @cd /d "%~dp0"
 
 
@@ -30,28 +32,28 @@
 @goto out
 
 :missing
-start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -disableluarefresh -noworkshop -windowed %GCNOADDONS% -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha writemissing
+start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -disableluarefresh -noworkshop -windowed %GCNOADDONS% -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha writemissing
 @goto win
 
 :cubemaps_ldr
-@rem start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 -buildcubemaps
-start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
+@rem start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 -buildcubemaps
+start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 :cubemaps_hdr
-@rem start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 -buildcubemaps
-start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop  %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
+@rem start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 768 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 -buildcubemaps
+start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop  %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 :navmesh
-start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GameExeDir%\hl2.exe" -game "%GameDir%" -multirun -console -noworkshop %GCNOADDONS% -windowed -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha navmesh
+start "AUTOMATION" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -noworkshop %GCNOADDONS% -windowed -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha navmesh
 @goto win
 
 @goto win
 :fail
 @echo SUBTASK FAILED
 @pause > nul
-@goto out
+exit 1
 
 :win
 @echo Subtask finished

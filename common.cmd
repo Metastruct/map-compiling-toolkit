@@ -31,7 +31,7 @@
 
 @call user_config.cmd
 
-@call "%~d0%~p0\build_version.bat"
+@call "%~d0%~p0\build_version.cmd"
 
 @rem input vmf
 @set mapfile=metastruct_3
@@ -62,17 +62,20 @@
 @set FGDS=%sourcesdk%\bin\base.fgd,%sourcesdk%\bin\halflife2.fgd,%mapfolder%\metastruct.fgd
 
 @rem REQUIRED configuration folder, needs gameinfo.txt at least
-@set VProject=%~d0%~p0
-@set VProject_Hammer=%VProject%game_hammer
-@set VProject=%VProject%game_compiling
+@set toolkit_root=%~d0%~p0
+@set VProject_Hammer=%toolkit_root%\game_hammer\garrysmod
+@set VProject=%toolkit_root%\game_compiling\garrysmod
+@set compilers_dir=%toolkit_root%\game_compiling\bin\win64
 
-@IF EXIST "%VProject_Hammer%"\gameinfo.txt @GOTO VProject_Hammer_fixskip
+
+@IF EXIST "%VProject_Hammer%\gameinfo.txt" @GOTO VProject_Hammer_fixskip
 @set VProject_Hammer=%VProject%
 @echo Missing %VProject_Hammer%\gameinfo.txt
 :VProject_Hammer_fixskip
 
 
 @call user_config.cmd
+
 
 @rem Where garrysmod locates
 @set GameDir=%SteamPath%\steamapps\common\GarrysMod\garrysmod
@@ -105,7 +108,7 @@
 @IF NOT EXIST "%TESTPATH%" @GOTO fail
 @set TESTPATH=%GameExeDir%\bin
 @IF NOT EXIST "%TESTPATH%" @GOTO fail
-@set TESTPATH=%GameDir%\bin
+@set TESTPATH=%GameDir%\addons
 @IF NOT EXIST "%TESTPATH%" @GOTO fail
 @set TESTPATH=%GameDir%\maps
 @IF NOT EXIST "%TESTPATH%" @GOTO fail

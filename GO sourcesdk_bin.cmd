@@ -1,3 +1,3 @@
 @cd /d "%~dp0"
-@call config.bat
+@call common.cmd
 @explorer "%sourcesdk%\bin\"
