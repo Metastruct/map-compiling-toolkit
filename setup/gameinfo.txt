@@ -1,0 +1,22 @@
+"GameInfo"
+{
+	game	"GMod"
+	type multiplayer_only
+	nodegraph 0
+
+
+	FileSystem
+	{
+		SteamAppId				4000
+		ToolsAppId				211
+		SearchPaths
+		{
+			"mod+mod_write+default_write_path"		"|gameinfo_path|."
+
+
+			"game"				"|all_source_engine_paths|hl2"
+			"platform"			"|all_source_engine_paths|platform"
+			
+		}
+	}
+}

@@ -1,0 +1,33 @@
+"Configs"
+{
+	"Games"
+	{
+		"GMODMAPDEV"
+		{
+			"GameDir"		"x:\do\GMod\meta3-mapcompiler\game_hammer\garrysmod"
+			"Hammer"
+			{
+				"GameData0"		"x:\g\steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\halflife2.fgd"
+				"GameData1"		"x:\g\steam\steamapps\common\Source SDK Base 2013 Multiplayer\bin\propper.fgd"
+				"GameData2"		"X:\do\gmod\metastruct\mapfiles\metastruct.fgd"
+				"TextureFormat"		"5"
+				"MapFormat"		"4"
+				"DefaultTextureScale"		"0.250000"
+				"DefaultLightmapScale"		"128"
+				"GameExe"		"x:\g\steam\steamapps\common\GarrysMod\hl2.exe"
+				"DefaultSolidEntity"		"func_detail"
+				"DefaultPointEntity"		"light"
+				"BSP"		"x:\g\steam\SteamApps\common\Source SDK Base 2013 Multiplayer\bin\vbsp.exe"
+				"Vis"		"x:\g\steam\SteamApps\common\Source SDK Base 2013 Multiplayer\bin\vvis.exe"
+				"Light"		"x:\g\steam\SteamApps\common\Source SDK Base 2013 Multiplayer\bin\vrad.exe"
+				"GameExeDir"		"x:\g\steam\steamapps\common\GarrysMod"
+				"MapDir"		"x:\g\steam\steamapps\common\GarrysMod\garrysmod\maps"
+				"BSPDir"		"x:\g\steam\steamapps\common\GarrysMod\garrysmod\maps"
+				"CordonTexture"		"tools\toolsskybox"
+				"MaterialExcludeCount"		"0"
+			}
+		}
+		"SDKVersion"		"5"
+	}
+	"SDKVersion"		"5"
+}

@@ -2,7 +2,9 @@
 /user_config.cmd
 /VIDE
 /game_compiling
+/game_hammer
 /compilepal
 /bin
-
 /extras/hammerlua/lua/winapiffi
+/game_hammer_
+/game_compiling_
