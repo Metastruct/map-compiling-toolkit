@@ -24,11 +24,11 @@ Requirements
 	 - CS:S
 	 - TF2
  - Metastruct Map Datas (one repo for map files and one for map assets) (or your own map)
- - Python
- - (Git)[https://gitforwindows.org/] (Choose commit-as-is, add git to system PATH)
+ - [Python3](https://www.python.org/downloads/)
+ - [Git](https://gitforwindows.org/) (Choose commit-as-is, add git to system PATH)
  - A lot of time
 
-Setting up
+Setting up for metastruct map
 -------------
 - Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
    - Place it on a path that has no spaces. It will download more folders to that folder.
