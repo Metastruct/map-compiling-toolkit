@@ -19,19 +19,19 @@ Features
 Requirements
 -------------
  - Steam
-	 - Source SDK Base 2013 Multiplayer
-	 - Garry's Mod
-	 - CS:S
-	 - TF2
+	 - [Source SDK Base 2013 Multiplayer](steam://install/243750)
+	 - [Garry's Mod](steam://install/4000)
+	 - [CS:S](steam://install/240)
+	 - [TF2](steam://install/440)
  - Metastruct Map Datas (one repo for map files and one for map assets) (or your own map)
- - [Python3](https://www.python.org/downloads/)
- - [Git](https://gitforwindows.org/) (Choose commit-as-is, add git to system PATH)
+ - [Python3](https://www.python.org/downloads/) (Choose add python.exe to path)
+ - [Git](https://gitforwindows.org/) (Choose commit-as-is and choose add git.exe to system PATH)
  - A lot of time
 
 Setting up for metastruct map
 -------------
 - Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
-   - Place it on a path that has no spaces. It will download more folders to that folder.
+   - Place it on a empty folder that has no spaces. It will download more folders to that folder.
    - Run it. Hope it finds everything automatically.
 - Configure the opened user_config.cmd! (look inside common.cmd for configurable params)
 - You're on your own now, maybe attempt launch hammer

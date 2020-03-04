@@ -11,9 +11,23 @@ git ls-remote git@gitlab.com:metastruct/mapfiles.git
 
 @echo # Clone all required repos
 git clone https://github.com/Metastruct/map-compiling-toolkit.git map-compiling-toolkit
+
 git clone git@gitlab.com:metastruct/mapdata.git mapdata
+@IF ERRORLEVEL 1 GOTO mapdata_fail
+@goto mapdata_ok
+:mapdata_fail
+git clone https://gitlab.com/metastruct/mapdata.git mapdata
+:mapdata_ok
+
 git clone https://github.com/Metastruct/meta-mapassets mapdata2
+
 git clone git@gitlab.com:metastruct/mapfiles.git mapfiles
+@IF ERRORLEVEL 1 GOTO mapfiles_fail
+@goto mapfiles_ok
+:mapfiles_fail
+git clone https://gitlab.com/metastruct/mapfiles.git mapfiles
+:mapfiles_ok
+
 
 @echo # Autosetup folders and paths
 
