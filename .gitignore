@@ -8,3 +8,5 @@
 /extras/hammerlua/lua/winapiffi
 /game_hammer_
 /game_compiling_
+/setup/__pycache__
+/setup/build/setup
