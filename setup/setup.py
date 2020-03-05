@@ -5,6 +5,7 @@ from shutil import copyfileobj
 import vpk
 import traceback
 import sys
+import distutils.dir_util
 
 def my_except_hook(*exc_info):
 	if exc_info[0] == KeyboardInterrupt:
@@ -54,7 +55,7 @@ def RebuildHammerRoot():
 		(HammerRoot()/ 'garrysmod' / 'cfg').mkdir(parents=True, exist_ok=True)
 		def mov(s,d):
 			if (GetGModPath()/s).is_dir():
-				shutil.copytree(str(GetGModPath()/s), str(HammerRoot()/ d))
+				distutils.dir_util.copy_tree(str(GetGModPath()/s), str(HammerRoot()/ d))
 			else:
 				shutil.copy(str(GetGModPath()/s), str(HammerRoot()/ d))
 			
@@ -68,7 +69,9 @@ def RebuildHammerRoot():
 		with (HammerRoot() / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
 			
-		mov("bin",'bin')
+		mov("bin/",'bin/')
+		mov("platform/",'platform/')
+		mov("garrysmod/resource/",'garrysmod/resource/')
 		
 		# hammer needs shaders
 		with vpk.open(str(GetGModPath()/"sourceengine/hl2_misc_dir.vpk")) as hl2misc:
@@ -85,7 +88,7 @@ def RebuildCompilerRoot():
 		(CompilerRoot()/ 'garrysmod' / 'cfg').mkdir(parents=True, exist_ok=True)
 		def mov(s,d):
 			if (GetGModPath()/s).is_dir():
-				shutil.copytree(str(GetGModPath()/s), str(CompilerRoot()/ d))
+				distutils.dir_util.copy_tree(str(GetGModPath()/s), str(CompilerRoot()/ d))
 			else:
 				shutil.copy(str(GetGModPath()/s), str(CompilerRoot()/ d))
 			
