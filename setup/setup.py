@@ -36,7 +36,14 @@ pathcheck(False,"CSS\t\t",CSSPath("cstrike"))
 pathcheck(True,"Maps\t\t",MapFiles())
 pathcheck(True,"Map assets\t",MapAssets())
 print("")
-	
+
+def link_files(s,target):
+	try:
+		os.link(    str(GetGModPath()/s), str(target/ s))
+	except OSError as e:
+		shutil.copy(str(GetGModPath()/s), str(target/ s))
+		
+				
 def RebuildHammerRoot():
 	if not (HammerRoot()/ 'garrysmod' / 'garrysmod_dir.vpk').exists():
 		print("missing hammer copy, copying")
@@ -47,12 +54,10 @@ def RebuildHammerRoot():
 			else:
 				shutil.copy(str(GetGModPath()/s), str(HammerRoot()/ d))
 			
-		def link(s):
-			os.link(str(GetGModPath()/s), str(HammerRoot()/ s))
-		link("garrysmod/garrysmod_000.vpk")
-		link("garrysmod/garrysmod_001.vpk")
-		link("garrysmod/garrysmod_002.vpk")
-		link("garrysmod/garrysmod_dir.vpk")
+		link_files("garrysmod/garrysmod_000.vpk",HammerRoot())
+		link_files("garrysmod/garrysmod_001.vpk",HammerRoot())
+		link_files("garrysmod/garrysmod_002.vpk",HammerRoot())
+		link_files("garrysmod/garrysmod_dir.vpk",HammerRoot())
 		mov("platform/platform_misc_000.vpk",'garrysmod/')
 		mov("platform/platform_misc_dir.vpk",'garrysmod/')
 		mov("garrysmod/steam.inf",'garrysmod/')
@@ -80,16 +85,15 @@ def RebuildCompilerRoot():
 			else:
 				shutil.copy(str(GetGModPath()/s), str(CompilerRoot()/ d))
 			
-		def link(s):
-			os.link(str(GetGModPath()/s), str(CompilerRoot()/ s))
-		link("garrysmod/garrysmod_000.vpk")
-		link("garrysmod/garrysmod_001.vpk")
-		link("garrysmod/garrysmod_002.vpk")
-		link("garrysmod/garrysmod_dir.vpk")
+
+		link_files("garrysmod/garrysmod_000.vpk",CompilerRoot())
+		link_files("garrysmod/garrysmod_001.vpk",CompilerRoot())
+		link_files("garrysmod/garrysmod_002.vpk",CompilerRoot())
+		link_files("garrysmod/garrysmod_dir.vpk",CompilerRoot())
 		mov("platform/platform_misc_000.vpk",'garrysmod')
 		mov("platform/platform_misc_dir.vpk",'garrysmod')
 		mov("garrysmod/steam.inf",'garrysmod')
-		mov("garrysmod/scripts",'garrysmod/scripts')
+
 		
 		with (CompilerRoot() / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
@@ -163,24 +167,46 @@ def BuildGameInfo(target):
 
 def GenerateUserConfig():
 	if (ToolkitRoot() / 'user_config.cmd').exists():
+		print("NOTICE: user_config.cmd already exists. If you need to regenerate it, remove it first.")
 		return
 	
 	def GetAnyMap():
 		for map in MapFiles().glob('*.vmf'):
 			return map.replace(".vmf","")
 		return "gm_mymap"
+	
+	template="""@rem see common.cmd for potential configuration options
 
-	with (Path('.') / 'user_config.cmd').open('r') as template, (ToolkitRoot() / 'user_config.cmd').open('w') as output:
+@set SteamAppUser={SteamAppUser}
+@set SteamPath={SteamPath}
+
+@set SteamPathAlt={SteamPathAlt}
+
+@set mapfolder={mapfolder}
+@set version_file=%mapfolder%\ver_meta3.txt
+@set mapdata={mapdata}
+@set GameDir={GameDir}
+@set GameExeDir={GameExeDir}
+
+@set mapwsid=123456
+@set mapfile={mapfile}
+@set mapname={mapname}_%BUILD_VERSION%
+
+"""
+	
+	with (ToolkitRoot() / 'user_config.cmd').open('w') as output:
 		mapfile = (MapFiles() / 'metastruct_3.vmf').exists() and 'metastruct_3' or GetAnyMap()
 		mapname = mapfile=="metastruct_3" and "gm_construct_m3" or "gm_mymap"
 		
-		output.write( template.read().format( SteamAppUser="ChangeMe",
+		output.write( template.format( SteamAppUser="ChangeMe",
 			SteamPath=GetSteamPath(),
-			SteamPathAlt=GetGamePath(4000).parents[0],
+			SteamPathAlt=GetGModPath().parents[0],
 			mapfolder=MapFiles(),
 			mapdata=MapAssets(),
 			mapfile=mapfile,
-			mapname=mapname
+			mapname=mapname,
+			GameDir=GetGModPath()/'garrysmod',
+			GameExeDir=GetGModPath()
 		))
 	print("Generated user_config.cmd, edit it!")
 GenerateUserConfig()
@@ -195,4 +221,4 @@ BuildHammerGameConfig()
 BuildGameInfo(HammerRoot() / 'garrysmod/gameinfo.txt')
 BuildGameInfo(CompilerRoot() / 'garrysmod/gameinfo.txt')
 
-input("\nPress ENTER to close.")
+input("\nPress ENTER to continue.")

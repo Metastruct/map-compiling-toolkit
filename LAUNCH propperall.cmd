@@ -64,6 +64,8 @@ ROBOCOPY "%GameDir%\models\props\metastruct" "%PROPPER_TARGET%\models\props\meta
 @echo =======================
 @echo ====== FINISHED =======
 @echo =======================
+
+@echo Press ENTER to continue.
 @pause > nul
 
 @goto gtfo
@@ -71,3 +73,4 @@ ROBOCOPY "%GameDir%\models\props\metastruct" "%PROPPER_TARGET%\models\props\meta
 
 :gtfo
 @echo.
+exit 0
