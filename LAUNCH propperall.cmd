@@ -21,7 +21,7 @@
 @set sourcesdk=%CMD_LC_ROOT%\game_compiling
 
 @set PATH=%CMD_LC_ROOT%\extras\propper\bin;%PATH%
-@%VBSPNAME% >nul 2>nul
+@"%VBSPNAME%" >nul 2>nul
 @if ERRORLEVEL 9009 goto nofound
 
 
@@ -38,7 +38,7 @@
 @echo.
 @for /r %%i in (*.vmf) do @(
 	@echo Processing %%i   Log: %%i.log
-	%VBSPNAME% %%i 1>"%%i.log"
+	"%VBSPNAME%" %%i 1>"%%i.log"
 	@if ERRORLEVEL 1 goto failed
 )
 
