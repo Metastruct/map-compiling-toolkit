@@ -179,7 +179,7 @@ def GenerateUserConfig():
 			return map.replace(".vmf","")
 		return "gm_mymap"
 	
-	template="""@rem see common.cmd for potential configuration options
+	template=r"""@rem see common.cmd for potential configuration options
 
 @set SteamAppUser={SteamAppUser}
 @set SteamPath={SteamPath}
