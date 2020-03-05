@@ -6,16 +6,16 @@ import vpk
 import traceback
 import sys
 
-def my_except_hook(exctype, value, traceback):
-	if exctype == KeyboardInterrupt:
-		print("\n\n====== Something happened that we can't handle ======")
-		print(exctype)
-		print(value)
-		print(traceback)
-		input("\nThis may be a programming error.\n\nPress ENTER to close this window.")
+def my_except_hook(*exc_info):
+	if exc_info[0] == KeyboardInterrupt:
+		input("\nABORTED.")
 		sys.exit(1)
 	else:
-		sys.__excepthook__(exctype, value, traceback)
+		print("\n\n====== Something unexpected happened that we can't handle ======")
+		print("".join(traceback.format_exception(*exc_info)))
+		input("This may be a programming error.\nCopy all of this screen and make an issue at https://github.com/Metastruct/map-compiling-toolkit/issues/new\n\nPress ENTER to abort.")
+		sys.exit(1)
+		
 sys.excepthook = my_except_hook
 
 def pathcheck(fatal,printthing,path):
@@ -29,6 +29,10 @@ def pathcheck(fatal,printthing,path):
 
 print("\nChecking paths:")
 pathcheck(True,"GMod\t\t",GetGModPath())
+if not (GetGModPath() / 'bin/win64').exists():
+	input("\nERROR: You need to run GMod in x86-64 branch for devenv to work.\n\nPress ENTER to abort.")
+	sys.exit(1)
+
 pathcheck(False,"Hammer\t\t",HammerRoot())
 pathcheck(False,"Compiler\t",CompilerRoot())
 pathcheck(False,"TF2\t\t",TF2Path("tf"))

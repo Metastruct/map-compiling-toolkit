@@ -7,11 +7,23 @@
 
 @echo %NL% [33m# Test if git exists[0m
 git --version
-@IF ERRORLEVEL 1 GOTO fail
+@IF ERRORLEVEL 1 GOTO getgit
+goto gitok
+:getgit
+@echo %NL% [33m# Install GIT! (choose add to path and commit as-is in setup)[0m
+start "" https://gitforwindows.org/
+@goto fail
+:gitok
 
 @echo %NL% [33m# Test if gitlab is accessible[0m
 git ls-remote git@gitlab.com:metastruct/mapfiles.git
+@IF ERRORLEVEL 1 GOTO try_gitlab_https
+@GOTO gitlab_test_end
+
+:try_gitlab_https
+git ls-remote https://gitlab.com/metastruct/mapfiles.git
 @IF ERRORLEVEL 1 GOTO fail
+:gitlab_test_end
 
 @echo %NL% [33m# Clone all required repos[0m
 
@@ -78,4 +90,5 @@ CALL "LAUNCH hammer map.cmd"
 @echo %NL% [33m FAILURE[0m
 
 :end
+@echo.
 @pause
