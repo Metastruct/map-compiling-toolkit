@@ -159,6 +159,11 @@ def BuildGameInfo(target):
 	
 	SearchPaths=conf["FileSystem"]["SearchPaths"]
 	SearchPaths["game"]=MapAssets()
+	
+	SearchPaths["game"]=TF2Path("tf")/"tf2_sound_misc.vpk"
+	SearchPaths["game"]=TF2Path("tf")/"tf2_textures.vpk"
+	SearchPaths["game"]=TF2Path("tf")/"tf2_misc.vpk"
+	SearchPaths["game"]=CSSPath("cstrike")/"cstrike_pak.vpk"
 	SearchPaths["game"]=GetGModPath()/"garrysmod/garrysmod.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_textures.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_sound_misc.vpk"
