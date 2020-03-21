@@ -302,8 +302,8 @@ goto navmesh_end
 
 :docompress
 @echo ================= Compressing to .bz2 files for fastdl ================= 
-@start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.bsp"
-@start /low /min bzip2 -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
+@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.bsp"
+@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
 
 @set "filename=%GameDir%\maps\%mapname%.nav"
 @set size=0
@@ -312,13 +312,13 @@ goto navmesh_end
 @echo "NAVMESH GENERATION FAILED. Size=%size%"
 @goto navcskip
 :navok
-@start /low /min bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
+@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
 :navcskip
 
 @echo ================= TESTING MAP (HDR) ================= 
 
 if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1024 -h 768 +sv_noclipspeed 25 +mat_hdr_level 2 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
-bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
+extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
 
 
 @goto win
@@ -357,14 +357,15 @@ bzip2 -kf -9 "%GameDir%\maps\%mapname%.nav"
 
 
 :win
-@echo =======================
-@echo ====== FINISHED =======
-@echo =======================
+@echo ====================
+@echo ===== FINISHED =====
+@echo ====================
 
 @if %AUTO_UPLOAD_MAP%==1 goto uploader
 
-@set /P DEC="Write y and press enter to run workshop publisher. Otherwise press enter to close "
+@set /P DEC="Write y and press enter to run workshop publisher. Otherwise press enter to close. "
 @if "%DEC%"=="y" @goto uploader 
+@if "%DEC%"=="Y" @goto uploader
 @goto gtfo
 
 
