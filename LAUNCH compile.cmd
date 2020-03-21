@@ -317,8 +317,53 @@ goto navmesh_end
 
 @echo ================= TESTING MAP (HDR) ================= 
 
+@extras\flashcmd.exe >nul 2>nul
 if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1024 -h 768 +sv_noclipspeed 25 +mat_hdr_level 2 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
 extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
+
+
+
+
+
+@rem ============= GIT PUSH REQUEST ============
+
+@if defined NOCOMPILERCOMMIT @GOTO gitpush_ending
+
+@echo.
+@echo [33mModified mapfiles:[0m
+@git -C "%mapfolder%" status --untracked-files=no -s
+@echo.
+
+
+@git -C "%mapfolder%" diff-index --quiet HEAD
+@if ERRORLEVEL 1 @GOTO gitpush_dirty
+
+@echo [33m# All clean[0m
+@GOTO gitpush_ending
+
+:gitpush_dirty
+@extras\flashcmd.exe >nul 2>nul
+@echo [33m# Uncommitted changes, launching command prompt for you.[0m
+
+@echo.
+@pushd .
+@cd "%mapfolder%"
+
+@bash.exe
+@if ERRORLEVEL 1 @GOTO gitpush_bashfail
+@GOTO gitpush_bashok
+:gitpush_bashfail
+cmd.exe
+
+:gitpush_bashok
+popd
+
+:gitpush_ending
+
+
+
+
+
 
 
 @goto win
