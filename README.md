@@ -1,6 +1,8 @@
 MS Map Compiling Toolkit
 ===================
 
+A self-contained map editing and compiling environment in a folder.
+
 Features
 -------------
 
@@ -30,11 +32,12 @@ Requirements
 
 Setting up for metastruct map
 -------------
-- Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
-   - Place it on a empty folder that has no spaces. It will download more folders to that folder.
-   - Run it. Hope it finds everything automatically.
-- Configure the opened user_config.cmd! (look inside common.cmd for configurable params)
-- You're on your own now, maybe attempt launch hammer
+1. Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
+2. Place it on a empty folder that has no spaces in the folder path, with 5GB free disk space. It will download more folders to that folder.
+3. Run it. Hope it finds everything automatically.
+4. Configure the opened user_config.cmd! (look inside common.cmd for configurable params)
+5. DONE! You're on your own now, maybe attempt launch hammer
+6. **If everything goes wrong** delete the folder where metamap_devenv is and redo everything with fixes
 
 Troubleshooting
 -----
