@@ -24,8 +24,8 @@ Requirements
 	 - [CS:S](steam://install/240)
 	 - [TF2](steam://install/440)
  - Metastruct Map Datas (one repo for map files and one for map assets) (or your own map)
- - [Python3](https://www.python.org/downloads/) (Choose add python.exe to path)
- - [Git](https://gitforwindows.org/) (Choose commit-as-is and choose add git.exe to system PATH)
+ - **NO LONGER NEEDED** [Python3](https://www.python.org/downloads/) (Choose add python.exe to path during installation)
+ - [Git](https://gitforwindows.org/) (Choose commit-as-is and choose add git.exe to system PATH during installation)
  - A lot of time
 
 Setting up for metastruct map
