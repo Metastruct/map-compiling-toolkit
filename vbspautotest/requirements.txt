@@ -1,0 +1,4 @@
+vpk
+vdf
+pyinstaller
+win10toast

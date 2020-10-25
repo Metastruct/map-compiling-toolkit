@@ -10,3 +10,7 @@
 /game_compiling_
 /setup/__pycache__
 /setup/build/setup
+/*.mdmp
+*.pyc
+/vbspautotest/build/setup
+/vbspautotest/env

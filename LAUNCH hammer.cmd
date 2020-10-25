@@ -3,12 +3,14 @@
 
 @if defined NOHAMMERAUTOUPDATE @GOTO updated
 
+
 @echo.
 @echo [33mModified mapfiles:[0m
 @git -C "%mapfolder%" status --untracked-files=no -s
 @echo.
 
 @echo [33m# Autoupdating mapfiles...[0m
+
 
 @git -C "%mapfolder%" pull
 @if ERRORLEVEL 1 @GOTO updatefail
@@ -46,6 +48,12 @@
 
 @rem @set VProject=%VProject_Hammer%
 @rem @echo Project: %VProject%
+
+
+@if not defined NOHAMMERCI (
+	@cd vbspautotest
+	@start /low /min vbspautotest.exe
+)
 
 @TITLE "Hammer Repo Waiter"
 @echo [33m# Waiting for hammer to close...[0m
