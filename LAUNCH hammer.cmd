@@ -52,7 +52,7 @@
 
 @if not defined NOHAMMERCI (
 	@cd vbspautotest
-	@start /low /min vbspautotest.exe
+	@start /low /min python vbspautotest.py
 )
 
 @TITLE "Hammer Repo Waiter"
