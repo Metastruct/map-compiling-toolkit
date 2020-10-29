@@ -37,8 +37,8 @@
 @cd /d "%mapfolder%\propper"
 @echo.
 @for /r %%i in (*.vmf) do @(
-	@echo Processing %%i   Log: %%i.log
-	"%VBSPNAME%" %%i 1>"%%i.log"
+	@echo Processing "%%i"   Log: "%%i.log"
+	"%VBSPNAME%" "%%i" 1>"%%i.log"
 	@if ERRORLEVEL 1 goto failed
 )
 
