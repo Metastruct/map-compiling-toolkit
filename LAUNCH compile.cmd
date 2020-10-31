@@ -1,4 +1,5 @@
 @set VRADHDR=-softsun 25 -bounce 24
+@set VBSPEXTRAS=-notjunc
 @rem -StaticPropSampleScale 0.25 -StaticPropLighting
 @rem @set VRADHDR=-softsun 15 -bounce 32 -StaticPropPolys -StaticPropLighting -final
 @rem todo move to configs
@@ -131,7 +132,7 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 
 
 @echo VProject %VProject%
-"%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic -leaktest -low "%mapfolder%\%mapname%"
+"%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic %VBSPEXTRAS% -leaktest -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
