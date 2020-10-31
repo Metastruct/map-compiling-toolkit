@@ -56,7 +56,7 @@
 )
 
 @TITLE "Hammer Repo Waiter"
-@echo [33m# Waiting for hammer to close...[0m
+@echo [33m# Started Hammer. Waiting for hammer to close before closing this window...[0m
 @start /WAIT "Hammer" "%VProject_Hammer%\..\bin\hammer.exe" %HammerParams% %*
 
 @if defined NOHAMMERAUTOUPDATE @GOTO ending
