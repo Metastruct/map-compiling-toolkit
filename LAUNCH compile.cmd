@@ -99,8 +99,10 @@ set TESTBUILD=1
 
 :docopy
 @set targetvmf=%mapfolder%\%mapname%.vmf
+@set targetrad=%mapfolder%\%mapname%.rad
 @COPY "%mapfolder%\%mapfile%.vmf" "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
+@COPY "%mapfolder%\%mapfile%.rad" "%targetrad%" 2>nul >nul
 
 
 
@@ -156,11 +158,6 @@ if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADLDR% -noskyboxrecurse
 @echo ================= VRAD HDR ================================================
 if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
-
-
-
-
-
 
 
 
