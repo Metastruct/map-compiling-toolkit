@@ -1,6 +1,6 @@
 @set ORIGFOLDER=%CD%
 @set CMD_LC_ROOT=%~dp0
-
+@set VBSPEXTRAS=-notjunc
 @call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 
@@ -18,7 +18,7 @@
 
 extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"  > nul
 @if ERRORLEVEL 1 goto failed
-"%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic -leaktest -low "%targetvmf%"
+"%compilers_dir%\vbsp.exe" %VBSPEXTRAS% -allowdynamicpropsasstatic -leaktest -low "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 @if NOT exist "%targetbsp%" goto failed
 "%compilers_dir%\vvis.exe" -fast -low "%targetvmf%"
