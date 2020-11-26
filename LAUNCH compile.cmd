@@ -1,3 +1,11 @@
+@rem ==== DONT MIND ME ====
+@set NLM=^
+
+
+@set NL=^^^%NLM%%NLM%^%NLM%%NLM%
+@rem ======================
+
+
 @set VRADHDR=-softsun 25 -bounce 24
 @set VBSPEXTRAS=-notjunc
 @rem -StaticPropSampleScale 0.25 -StaticPropLighting
@@ -22,15 +30,16 @@
 @cd /d "%CMD_LC_ROOT%"
 @call common.cmd
 @cd /d "%CMD_LC_ROOT%"
-@echo Version to build: %BUILD_VERSION%
-@echo In: %mapfile%.vmf
-@echo Out: %mapname%.bsp
+@echo %NL% [33m# Version to build: %BUILD_VERSION%[0m
+@echo %NL% [33m# In: %mapfile%.vmf[0m
+@echo %NL% [33m# Out: %mapname%.bsp[0m
+
 @call build_version.cmd -1
 @cd /d "%CMD_LC_ROOT%"
 @call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 
-@del /S /Q "%CMD_LC_ROOT%\bspzip_out.log"
+@del /S /Q "%CMD_LC_ROOT%\bspzip_out.log" 2>nul >nul
 
 @if "%1"=="b" @goto buildnext
 @if "%1"=="B" @goto buildnext
@@ -94,8 +103,7 @@ set TESTBUILD=1
 
 
 
-@echo Compiling version '%BUILD_VERSION%' target bsp: "%mapfolder%\%mapname%.bsp"
-
+@echo %NL% [33m# Compiling version '%BUILD_VERSION%' target bsp: "%mapfolder%\%mapname%.bsp"[0m
 
 
 :docopy
@@ -113,9 +121,44 @@ set TESTBUILD=1
 
 
 :vmfii
-@echo ================= VMF Merging =================
-extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
+
+@echo %NL% [33m# VMF Merging [0m
+
+extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%" >> %mapfolder%\%mapname%.log
 @if ERRORLEVEL 1 goto failed
+
+
+
+
+@if %TRIGGER_STRIPPING_HACK_ENABLE%==1 goto hack_triggerstrip
+@goto hack_triggerstrip_skip
+
+:hack_triggerstrip
+@set mapname_trigger=%mapname%_trigger
+@echo %NL% [33m# lua_trigger hack stripping from vmf [0m
+copy "%targetvmf%" "%mapfolder%\%mapname_trigger%.vmf"
+@if ERRORLEVEL 1 goto failed
+python removetriggers.py "%mapfolder%\%mapname_trigger%.vmf" "%targetvmf%"
+@if ERRORLEVEL 1 goto failed
+"%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic %VBSPEXTRAS% -leaktest -low "%mapfolder%\%mapname_trigger%"
+@if ERRORLEVEL 1 goto failed
+
+@echo %NL% [33m# Generating trigger files in data folder[0m
+COPY "%mapfolder%\%mapname_trigger%.bsp" "%GameDir%\maps\%mapname_trigger%.bsp"
+@if ERRORLEVEL 1 goto trigger_fail
+@cd /d "%CMD_LC_ROOT%"
+call extras\gmodcommander.cmd trigger_extract "%mapname_trigger%"
+@if ERRORLEVEL 1 goto trigger_fail
+@goto trigger_ok
+:trigger_fail
+@cd /d "%CMD_LC_ROOT%"
+@echo trigger extraction failed :(
+:trigger_ok
+@cd /d "%CMD_LC_ROOT%"
+
+
+
+:hack_triggerstrip_skip
 
 
 
@@ -128,8 +171,8 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 
 
 :vbsp
-@echo ================= VBSP ====================================================
 
+@echo %NL% [33m# VBSP [0m
 
 @echo VProject %VProject%
 "%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic %VBSPEXTRAS% -leaktest -low "%mapfolder%\%mapname%"
@@ -139,8 +182,8 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"
 
 
 :vvis
-@echo ================= VVIS ====================================================
 
+@echo %NL% [33m# VVIS[0m
 if not %TESTBUILD%==1 "%compilers_dir%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
@@ -150,13 +193,15 @@ if not %TESTBUILD%==1 "%compilers_dir%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if %NOLDR%==1 goto vradhdr
 
 :vradldr
-@echo ================= VRAD LDR ================================================
+
+@echo %NL% [33m# VRAD LDR[0m
 if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADLDR% -noskyboxrecurse -ldr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
 
 :vradhdr
-@echo ================= VRAD HDR ================================================
+
+@echo %NL% [33m# VRAD HDR[0m
 if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADHDR% -noskyboxrecurse -hdr "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
@@ -168,7 +213,8 @@ if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADHDR% -noskyboxrecurse
 :reprocess
 
 :copy
-@echo ================= Copying to game =========================================
+
+@echo %NL% [33m# Copying to game[0m
 COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
@@ -285,6 +331,8 @@ goto hdrok
 :navmesh
 @echo ================= Generating navmesh =================
 
+@set targetnav=%GameDir%\maps\%mapname%.nav
+
 @if not exist "%mapfolder%\%mapfile%.lm.txt" @goto navmesh_noseeds
 
 @cd /d "%CMD_LC_ROOT%"
@@ -293,7 +341,7 @@ goto hdrok
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
 
-goto navmesh_end
+@goto navmesh_end
 :navmesh_noseeds
 @echo SKIPPING: Seed file missing "%mapfolder%\%mapfile%.lm.txt"
 :navmesh_end
@@ -303,11 +351,11 @@ goto navmesh_end
 @start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.bsp"
 @start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
 
-@set "filename=%GameDir%\maps\%mapname%.nav"
+@rem Check navmesh existing and warn if not
 @set size=0
-@for /f %%A in (%filename%) do set size=%%~zA
-@if %size% GTR 1 @goto navok
-@echo "NAVMESH GENERATION FAILED. Size=%size%"
+@for /f %%i in ("%targetnav%") do set size=%%~zi
+@if %size% gtr 0 @goto navok
+@echo NAVMESH GENERATION FAILED (%targetnav%). Size=%size%
 @goto navcskip
 :navok
 @start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"

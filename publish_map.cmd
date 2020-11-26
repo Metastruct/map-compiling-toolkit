@@ -31,7 +31,10 @@ copy "%GameDir%\maps\%mapname%.bsp" "%mapfolder%\%mapfile%\maps\"
 	copy "%GameDir%\maps\graphs\%mapname%.ain" "%mapfolder%\%mapfile%\maps\graphs"
 )
 
+
+@if %DONT_PUBLISH_NAV%==1 @goto nocopynav
 @if exist "%GameDir%\maps\%mapname%.nav" copy "%GameDir%\maps\%mapname%.nav" "%mapfolder%\%mapfile%\maps\"
+:nocopynav
 
 @if exist "%mapfolder%\%mapfile%.gma" @del "%mapfolder%\%mapfile%.gma"
 
