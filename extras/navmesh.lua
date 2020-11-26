@@ -1,13 +1,17 @@
-print"navmesh.lua running..."
+local function dbg(...)
+	Msg"[navmesh.lua] " print(...)
+end
+
+dbg"Loaded..."
 local navmeshregen
 pcall(require,'landmark')
 if not landmark or not landmark.get then
 	system.FlashWindow()
-	print"UNABLE TO LOAD LANDMARK MODULE"
+	dbg"UNABLE TO LOAD LANDMARK MODULE"
 end
 
 if GetConVar("con_nprint_bgalpha"):GetString()=="quit" then
-	print "quitting..."
+	dbg "quitting..."
 	RunConsoleCommand("exitgame")
 	if game.ConsoleCommand then
 		game.ConsoleCommand( "exitgame\n" )
@@ -46,23 +50,26 @@ hook.Add("Think","agwegwegg",function()
 	if i>0 then return end
 	hook.Remove("Think","agwegwegg")
 	
-	print"\n!!!!!BUILDING NAVMESH!!!!!!!!\n"
+	dbg"\n!!!!!BUILDING NAVMESH!!!!!!!!\n"
 	if not navmeshregen then
-		if not navmesh.IsLoaded() then navmesh.Load() end
+		if not navmesh.IsLoaded() then 
+			navmesh.Load() 
+		end
 		
 		if navmesh.IsLoaded() then
+			dbg"navmesh.IsLoaded()==true?"
 			if (file.Size("maps/"..game.GetMap()..'.nav','GAME') or -1) > 1 then
-				print"navmesh found, leaving..."
+				dbg"navmesh found, leaving..."
 				RunConsoleCommand("exitgame")
 				return
 			else
-				print"navmesh oversmall, regenerating"
+				dbg"navmesh oversmall, regenerating"
 			end
 		end
 	end
 	
 	if not file.Exists("navmesh_landmarks.txt", 'DATA') then
-		print "navmesh_landmarks.txt MISSING"
+		dbg "navmesh_landmarks.txt MISSING"
 		system.FlashWindow()
 		return
 	end
@@ -78,27 +85,38 @@ hook.Add("Think","agwegwegg",function()
 			if pos then
 				pos = pos + offset
 				local tr = util.TraceLine{
-					start = pos,
-					endpos = pos - Vector(0, 0, 512)
+					start = pos+Vector(0,0,16),
+					endpos = pos + Vector(0, 0, -2048)
 				}
-				if tr.Hit then 
+				if tr.Hit and util.IsInWorld(tr.HitPos)and util.IsInWorld(tr.HitPos+Vector(0,0,70)) then 
 					navmesh.AddWalkableSeed(tr.HitPos, tr.HitNormal)
+					dbg("AddWalkableSeed(Vector('"..tostring(tr.HitPos).."'), Vector('"..tostring(tr.HitNormal).."'))")
 					debugoverlay.Cross(tr.HitPos,128,120,Color(255,255,255),true)
 					err=false
-				else err="trace did not hit" end
+				else err="trace did not hit: "..tostring(lm) end
 
-			else err="landmark missing or invalid" end
-		else err="could not parse name" end
+			else err="landmark missing or invalid: "..tostring(lm) end
+		else err="could not parse name: "..tostring(lm) end
 		if err then
-		system.FlashWindow = system.FlashWindow or function() print("WTF?",SERVER,CLIENT,MENU) end
-			print(("Adding seed did not succeed: %s %q"):format(err,lm))
+			system.FlashWindow = system.FlashWindow or function() dbg("WTF?",SERVER,CLIENT,MENU) end
+			dbg(("Adding seed did not succeed: %s %q"):format(err,lm))
 		end
 	end
-	print("begin",navmesh.BeginGeneration())
+	
+	local last = SysTime()
+	local start = SysTime()
+	hook.Add("Think","elapseprint",function()
+		local now = SysTime()
+		if now-last > 10 then
+			last = now
+			dbg("Elapsed:",string.NiceTime(now-start))
+		end
+	end)
+	dbg("begin",navmesh.BeginGeneration())
 	
 	hook.Add("ShutDown","agwegwegg",function()
-		print"Quitting...?"
-		system.FlashWindow = system.FlashWindow or function() print("WTF?",SERVER,CLIENT,MENU) end
+		dbg"Attempting to exit (feel free to close the window after 30 seconds)"
+		system.FlashWindow = system.FlashWindow or function() dbg("WTF?",SERVER,CLIENT,MENU) end
 		system.FlashWindow()
 		RunConsoleCommand("exitgame")
 		if CLIENT then
@@ -110,12 +128,12 @@ hook.Add("Think","agwegwegg",function()
 			game.ConsoleCommand( "exitgame\n" )
 		end
 	end)
-	timer.Simple(1,function() print"built test?" end)
+	timer.Simple(1,function() dbg"Testing if built" end)
 	timer.Simple(60*2,function()
 		hook.Add("Think",'agwegwegg',function()
 			if navmesh.IsGenerating() then return end
 			hook.Remove("Think","agwegwegg")
-			print("save",navmesh.Save())
+			dbg("save",navmesh.Save())
 			RunConsoleCommand("exitgame")
 		end)
 		
