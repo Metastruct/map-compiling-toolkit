@@ -130,7 +130,7 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%" >> %mapfolder%\%mapname%
 
 
 
-@if %TRIGGER_STRIPPING_HACK_ENABLE%==1 goto hack_triggerstrip
+@if %TRIGGER_STRIPPING_HACK_ENABLE%==1 @goto hack_triggerstrip
 @goto hack_triggerstrip_skip
 
 :hack_triggerstrip
@@ -138,7 +138,7 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%" >> %mapfolder%\%mapname%
 @echo %NL% [33m# lua_trigger hack stripping from vmf [0m
 copy "%targetvmf%" "%mapfolder%\%mapname_trigger%.vmf"
 @if ERRORLEVEL 1 goto failed
-python removetriggers.py "%mapfolder%\%mapname_trigger%.vmf" "%targetvmf%"
+vlts.exe "%mapfolder%\%mapname_trigger%.vmf" "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 "%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic %VBSPEXTRAS% -leaktest -low "%mapfolder%\%mapname_trigger%"
 @if ERRORLEVEL 1 goto failed
@@ -149,10 +149,19 @@ COPY "%mapfolder%\%mapname_trigger%.bsp" "%GameDir%\maps\%mapname_trigger%.bsp"
 @cd /d "%CMD_LC_ROOT%"
 call extras\gmodcommander.cmd trigger_extract "%mapname_trigger%"
 @if ERRORLEVEL 1 goto trigger_fail
+
+COPY "%GameDir%\data\bspdata\%mapname_trigger%\triggers.json" "%GameDir%\maps\%mapname%_triggers.lmp"
+@if ERRORLEVEL 1 goto trigger_fail
+COPY "%GameDir%\data\bspdata\%mapname_trigger%\trigmesh.json" "%GameDir%\maps\%mapname%_trigmesh.lmp"
+@if ERRORLEVEL 1 goto trigger_fail
+
+
+
 @goto trigger_ok
 :trigger_fail
 @cd /d "%CMD_LC_ROOT%"
-@echo trigger extraction failed :(
+@echo Trigger extraction failed!
+@goto failed
 :trigger_ok
 @cd /d "%CMD_LC_ROOT%"
 
@@ -219,13 +228,13 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
 :cubemap
-@echo ================= Deleting default cubemaps ===============================
+@echo %NL% [33m# Deleting default cubemaps[0m
 @echo SKIPPED (Not required)
 @rem bspzip -deletecubemaps "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
 :pack
-@echo ================= Packing required files to map ===========================
+@echo %NL% [33m# Packing required files to map[0m
 @cd /d "%CMD_LC_ROOT%"
 extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "%GameDir%\maps\%mapname%.bsp.reslister"
 @if ERRORLEVEL 1 goto failed
@@ -241,11 +250,12 @@ extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "
 move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
+
 :missingcsstf
 
 @if %NO_MISSING_BUNDLING%==1 goto missingcsstf_skip
 
-@echo ================= Packing potentially missing vmts to map (WARNING: BETA FEATURE) =================
+@echo %NL% [33m# Packing potentially missing vmts to map (WARNING: BETA FEATURE)[0m
 
 @rd /s /q "%GameDir%\data\mapoverrides" 2>nul
 @del /Q /F "%GameDir%\data\addlist.txt" 2>nul
@@ -280,6 +290,8 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @echo Skipping...
 :missingcsstf_finish
 
+
+
 :extrabspzip
 @echo ================= Packing extra data from list =================
 
@@ -289,9 +301,10 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 
 @cd "%mapdata%"
 "%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%mapfolder%\%mapfile%.bspzip" "%GameDir%\maps\%mapname%.bsp.new" 
-@rem >> "%CMD_LC_ROOT%\bspzip_out.log"
 @if ERRORLEVEL 1 goto failed
+@rem >> "%CMD_LC_ROOT%\bspzip_out.log"
 
+@rem 
 @move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"
 @if ERRORLEVEL 1 goto failed
 @del /Q /F "%GameDir%\maps\%mapname%.bsp"
@@ -337,6 +350,7 @@ goto hdrok
 
 @cd /d "%CMD_LC_ROOT%"
 @copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
+@if ERRORLEVEL 1 goto failed
 @call extras\gmodcommander.cmd navmesh "%mapname%"
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
