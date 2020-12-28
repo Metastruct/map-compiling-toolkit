@@ -6,6 +6,8 @@
 @set HammerParams=-nop4
 
 @set NOLDR=0
+@set TRIGGER_STRIPPING_HACK_ENABLE=0
+@set DONT_PUBLISH_NAV=0
 
 @call user_config.cmd
 

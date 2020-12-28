@@ -75,7 +75,7 @@ copy "%GameDir%\maps\%mapname%_trigmesh.lmp" "%targetpath%\maps\"
 )
 
 @echo.
-@echo %GameExeDir%/bin/gmpublish update -addon "%targetpath%.gma" -id "%mapwsid%" -changes "%CHANGES%"
+%GameExeDir%/bin/gmpublish update -addon "%targetpath%.gma" -id "%mapwsid%" -changes "%CHANGES%"
 @if errorlevel 1 @goto fail
 :skippublish
 
