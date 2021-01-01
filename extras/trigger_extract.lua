@@ -14,7 +14,7 @@ RunConsoleCommand("con_nprint_bgalpha", "quit")
 print"\n\n\n"
 dbg"Loaded..."
 print"\n\n\n"
-local Tag = "a"
+local Tag = "trigger_extract"
 local ENT = {}
 ENT.Base = "base_brush"
 ENT.Type = "brush"

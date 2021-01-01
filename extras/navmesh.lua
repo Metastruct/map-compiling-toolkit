@@ -2,7 +2,6 @@ local function dbg(...)
 	Msg"[navmesh.lua] " print(...)
 end
 
-dbg"Loaded..."
 local navmeshregen
 pcall(require,'landmark')
 if not landmark or not landmark.get then
@@ -42,6 +41,7 @@ if GetConVar("con_nprint_bgalpha"):GetString()~="navmesh" then
 	end
 end
 
+dbg"Loaded..."
 RunConsoleCommand("con_nprint_bgalpha","quit")
 
 local i=68

@@ -113,12 +113,7 @@ set TESTBUILD=1
 @if ERRORLEVEL 1 goto failed
 @COPY "%mapfolder%\%mapfile%.rad" "%targetrad%" 2>nul >nul
 
-
-
-
-
-
-
+@rem ===================================
 
 :vmfii
 
@@ -128,7 +123,7 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%" >> %mapfolder%\%mapname%
 @if ERRORLEVEL 1 goto failed
 
 
-
+@rem ===================================
 
 @if %TRIGGER_STRIPPING_HACK_ENABLE%==1 @goto hack_triggerstrip
 @goto hack_triggerstrip_skip
@@ -163,21 +158,11 @@ COPY "%GameDir%\data\bspdata\%mapname_trigger%\trigmesh.json" "%GameDir%\maps\%m
 @echo Trigger extraction failed!
 @goto failed
 :trigger_ok
-@cd /d "%CMD_LC_ROOT%"
-
-
-
 :hack_triggerstrip_skip
 
+@cd /d "%CMD_LC_ROOT%"
 
-
-
-
-
-
-
-
-
+@rem ==========================
 
 :vbsp
 
@@ -187,16 +172,11 @@ COPY "%GameDir%\data\bspdata\%mapname_trigger%\trigmesh.json" "%GameDir%\maps\%m
 "%compilers_dir%\vbsp.exe" -allowdynamicpropsasstatic %VBSPEXTRAS% -leaktest -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
 
-
-
-
 :vvis
 
 @echo %NL% [33m# VVIS[0m
 if not %TESTBUILD%==1 "%compilers_dir%\vvis.exe" -low "%mapfolder%\%mapname%"
 @if ERRORLEVEL 1 goto failed
-
-
 
 :vrad
 @if %NOLDR%==1 goto vradhdr
@@ -215,10 +195,6 @@ if not %TESTBUILD%==1 "%compilers_dir%\vrad.exe" -low %VRADHDR% -noskyboxrecurse
 @if ERRORLEVEL 1 goto failed
 
 
-
-
-
-
 :reprocess
 
 :copy
@@ -229,7 +205,7 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 
 :cubemap
 @echo %NL% [33m# Deleting default cubemaps[0m
-@echo SKIPPED (Not required)
+@echo SKIPPED (No longer required)
 @rem bspzip -deletecubemaps "%GameDir%\maps\%mapname%.bsp"
 @if ERRORLEVEL 1 goto failed
 
@@ -320,26 +296,60 @@ echo Skipping packing. "%mapfile%.bspzip" not found.
 @if %NOLDR%==1 goto hdr
 
 :ldr
-@echo ================= Generating LDR Cubemaps =================
+@echo %NL% [33m# LDR Cubemaps[0m
 @cd /d "%CMD_LC_ROOT%"
 call extras\gmodcommander.cmd cubemaps_ldr "%mapname%"
 @if ERRORLEVEL 1 goto ldrfail
-goto ldrok
+@goto ldrok
 :ldrfail
 @echo WARNING: LDR builder CRASHED (ignoring). The map may still work.
 :ldrok
 @cd /d "%CMD_LC_ROOT%"
 
 :hdr
-@echo ================= Generating HDR Cubemaps =================
+
+@if %NOHDR%==1 goto hdrok
+
+@echo %NL% [33m# HDR Cubemaps[0m
 @cd /d "%CMD_LC_ROOT%"
 @call extras\gmodcommander.cmd cubemaps_hdr "%mapname%"
 @if ERRORLEVEL 1 goto hdrfail
-goto hdrok
+@goto hdrok
 :hdrfail
 @echo WARNING: HDR builder CRASHED (ignoring). The map may still work.
 :hdrok
 @cd /d "%CMD_LC_ROOT%"
+
+
+
+
+
+@if %ENABLE_BSPREZIP%==1 @goto hack_bsprezip
+@goto hack_bsprezip_skip
+
+:hack_bsprezip
+
+@echo %NL% [33m# Repacking bsp due to bugs in bspzip[0m
+
+COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%_prezip.bsp"
+@if ERRORLEVEL 1 goto failed
+
+@cd /d "%CMD_LC_ROOT%"
+call extras\gmodcommander.cmd bsprezip "%mapname%"
+@if ERRORLEVEL 1 goto failed
+
+@rem MOVE /Y "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%_broken.bsp"
+@del /Q /F "%GameDir%\maps\%mapname%.bsp"
+COPY "%GameDir%\data\%mapname%.bsp.dat" "%GameDir%\maps\%mapname%.bsp"
+@if ERRORLEVEL 1 goto failed
+
+
+:bsprezip_ok
+:hack_bsprezip_skip
+@cd /d "%CMD_LC_ROOT%"
+
+
+
 
 :navmesh
 @echo ================= Generating navmesh =================
@@ -349,7 +359,7 @@ goto hdrok
 @if not exist "%mapfolder%\%mapfile%.lm.txt" @goto navmesh_noseeds
 
 @cd /d "%CMD_LC_ROOT%"
-@copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
+copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
 @if ERRORLEVEL 1 goto failed
 @call extras\gmodcommander.cmd navmesh "%mapname%"
 @if ERRORLEVEL 1 goto failed

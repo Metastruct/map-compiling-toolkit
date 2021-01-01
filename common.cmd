@@ -6,8 +6,11 @@
 @set HammerParams=-nop4
 
 @set NOLDR=0
+@set NOHDR=0
 @set TRIGGER_STRIPPING_HACK_ENABLE=0
 @set DONT_PUBLISH_NAV=0
+@set ENABLE_BSPREZIP=0
+@set prompt=[32m$P$G[0m
 
 @call user_config.cmd
 
