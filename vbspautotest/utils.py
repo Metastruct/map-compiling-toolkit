@@ -35,13 +35,27 @@ def GetSteamPath():
 	
 @lru_cache(maxsize=32)
 def GetSteamLibraryPaths():
-	with open(GetSteamPath() + "/SteamApps/LibraryFolders.vdf") as lf:
-		vdffile = vdf.parse(lf)
-		vdflocations = [val for key,val in vdffile['LibraryFolders'].items() if key.isdigit()]+[steampath]
-		for path in vdflocations:
-			print("\tFound Library path: ",path)
-		return vdflocations
-		
+	vdflocations=[steampath]
+	
+	with open(GetSteamPath() + "/SteamApps/LibraryFolders.vdf") as f:
+		vdffile = vdf.parse(f)
+		libfolders = vdffile.get('LibraryFolders')
+		if libfolders:
+			print("Found legaacy library folders")
+			vdflocations = [val for key,val in libfolders.items() if key.isdigit()]+vdflocations
+			for path in vdflocations:
+				print("\tFound Library path: ",path)
+		else:
+			libfolders = vdffile.get('libraryfolders')
+			if libfolders:
+				vdflocations = [val["path"] for key,val in libfolders.items() if key.isdigit()]+vdflocations
+				for path in vdflocations:
+					print("\tFound Library path: ",path)
+			else:
+				print("[notice] No library folders?")
+				
+	return vdflocations
+
 @lru_cache(maxsize=32)
 def GetGamePath(appid):
 	for acfpath in GetSteamLibraryPaths():
