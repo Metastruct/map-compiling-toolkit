@@ -10,7 +10,7 @@ if not landmark or not landmark.get then
 end
 
 if GetConVar("con_nprint_bgalpha"):GetString()=="quit" then
-	dbg "quitting..."
+	dbg("quitting...",CLIENT)
 	RunConsoleCommand("exitgame")
 	if game.ConsoleCommand then
 		game.ConsoleCommand( "exitgame\n" )
@@ -19,17 +19,44 @@ if GetConVar("con_nprint_bgalpha"):GetString()=="quit" then
 		FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
 	end
 	
-	timer.Simple(5,function()
-	
+	-- timer does not run anymore, so sorry...
+	hook.Add("InitPostEntity","quitalready",function()
 		RunConsoleCommand("exitgame")
+		
 		if game.ConsoleCommand then
 			game.ConsoleCommand( "exitgame\n" )
 		end
 		if CLIENT then
 			FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
 		end
-	
 	end)
+	-- timer does not run anymore, so sorry...
+	hook.Add("Initialize","quitalready",function()
+		RunConsoleCommand("exitgame")
+		
+		if game.ConsoleCommand then
+			game.ConsoleCommand( "exitgame\n" )
+		end
+		if CLIENT then
+			FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
+		end
+	end)
+	
+	-- timer does not run anymore, so sorry...
+	local thonk
+	hook.Add("Think","quitalready",function()
+		if thonk then return end
+		thonk=true
+		RunConsoleCommand("exitgame")
+		
+		if game.ConsoleCommand then
+			game.ConsoleCommand( "exitgame\n" )
+		end
+		if CLIENT then
+			FindMetaTable"Player".ConCommand(NULL,'exitgame',true)
+		end
+	end)
+	
 	
 	return
 end
@@ -128,7 +155,6 @@ hook.Add("Think","agwegwegg",function()
 			game.ConsoleCommand( "exitgame\n" )
 		end
 	end)
-	timer.Simple(1,function() dbg"Testing if built" end)
 	timer.Simple(60*2,function()
 		hook.Add("Think",'agwegwegg',function()
 			if navmesh.IsGenerating() then return end
