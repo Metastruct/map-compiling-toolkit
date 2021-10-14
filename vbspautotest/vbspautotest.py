@@ -123,8 +123,8 @@ def dofail(ret):
 	if cilog.exists():
 		print("Found log file")
 		with cilog.open("rb") as f:
-			f.seek(-512, os.SEEK_END)
-			if b"LEAKED" in f.read():
+			f.seek(-512, os.SEEK_END) #TODO IMPROVE!!! Find the last "Loading .*\.vmf"
+			if b"LEAKED" in f.read() or b"Areaportal leak" in f.read():
 				print("LEAK DETECT")
 				notify.notify("Map leaked!",
 							"Hammer CI",

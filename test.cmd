@@ -10,8 +10,8 @@
 @set leakfile=%mapfolder%\ci.lin
 @del /Q /F "%targetvmf%" 2>nul >nul
 @del /Q /F "%targetbsp%" 2>nul >nul
-@rem The mappers need this :p
-@rem del /Q /F "%leakfile%"
+
+del /Q /F "%leakfile%"
 
 @COPY "%mapfolder%\%mapfile%.vmf" "%targetvmf%" >nul
 @if ERRORLEVEL 1 goto failed
@@ -21,6 +21,7 @@ extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%"  > nul
 "%compilers_dir%\vbsp.exe" %VBSPEXTRAS% -allowdynamicpropsasstatic -leaktest -low "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 @if NOT exist "%targetbsp%" goto failed
+@if exist "%leakfile%" goto failed
 "%compilers_dir%\vvis.exe" -fast -low "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 "%compilers_dir%\vrad.exe" -low %VRADLDR% -noskyboxrecurse -bounce 1  -noextra  -fastambient  -fast -ldr "%targetvmf%"
