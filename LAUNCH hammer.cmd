@@ -55,9 +55,15 @@
 	@start /low /min python vbspautotest.py
 )
 
+@set targetvbsp=%VProject_Hammer%\%mapfile%.vbsp
+@COPY "%mapfolder%\%mapfile%.vbsp" "%targetvbsp%" 2>nul >nul
+@COPY "%mapfolder%\detail_custom.vbsp" "%VProject%\detail_custom.vbsp" 2>nul >nul
+@COPY "%mapfolder%\detail.vbsp" "%VProject%\detail.vbsp" 2>nul >nul
+
+
 @TITLE "Hammer Repo Waiter"
 @echo [33m# Started Hammer. Waiting for hammer to close before closing this window...[0m
-@start /WAIT "Hammer" "%VProject_Hammer%\..\bin\hammer.exe" %HammerParams% %*
+@start /WAIT "Hammer" "%VProject_Hammer%\..\bin\hammerplusplus.exe" %HammerParams% %*
 
 @if defined NOHAMMERAUTOUPDATE @GOTO ending
 

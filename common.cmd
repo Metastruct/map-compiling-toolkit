@@ -37,7 +37,7 @@
 @call user_config.cmd
 
 @call "%~d0%~p0\build_version.cmd"
-
+    
 @rem input vmf
 @set mapfile=metastruct_3
 

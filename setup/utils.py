@@ -79,6 +79,14 @@ def CSSPath(d="."):
 def CSGOPath(d="."):
 	return GetGamePath(730) / d
 	
+@lru_cache(maxsize=32)
+def CSGO_SDKPath(d="."):
+	return GetGamePath(745) / d
+	
+@lru_cache(maxsize=32)
+def SDK2013MPPath(d="."):
+	return GetGamePath(243750) / d
+	
 
 @lru_cache(maxsize=32)
 def MapFiles(d="."):
@@ -103,3 +111,10 @@ def CompilerRoot():
 @lru_cache(maxsize=32)
 def ToolkitRoot(d="."):
 	return Path("..").resolve() / d
+
+if __name__ == "__main__":
+	print(GetGamePath(243750))
+	print(CSGOPath())
+	print(GetGModPath())
+	print(TF2Path())
+	print(SDK2013MPPath())

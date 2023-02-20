@@ -7,6 +7,32 @@ import traceback
 import sys
 import distutils.dir_util
 
+
+import sys 
+
+def has_debugger() -> bool:
+    return hasattr(sys, 'gettrace') and sys.gettrace() is not None
+
+GDIR='garrysmod'
+USERCONFIG_TEMPLATE = r"""@rem see common.cmd for potential configuration options
+
+@set SteamAppUser={SteamAppUser}
+@set SteamPath={SteamPath}
+
+@set SteamPathAlt={SteamPathAlt}
+
+@set mapfolder={mapfolder}
+@set version_file=%mapfolder%\ver_meta3.txt
+@set mapdata={mapdata}
+@set GameDir={GameDir}
+@set GameExeDir={GameExeDir}
+
+@set mapwsid=123456
+@set mapfile={mapfile}
+@set mapname={mapname}_%BUILD_VERSION%
+
+"""
+
 def my_except_hook(*exc_info):
 	if exc_info[0] == KeyboardInterrupt:
 		input("\nABORTED.")
@@ -16,8 +42,8 @@ def my_except_hook(*exc_info):
 		print("".join(traceback.format_exception(*exc_info)))
 		input("This may be a programming error.\nCopy all of this screen and make an issue at https://github.com/Metastruct/map-compiling-toolkit/issues/new\n\nPress ENTER to abort.")
 		sys.exit(1)
-		
-sys.excepthook = my_except_hook
+if not has_debugger():	
+	sys.excepthook = my_except_hook
 
 def pathcheck(fatal,printthing,path):
 	if path.exists():
@@ -43,69 +69,78 @@ pathcheck(True,"Maps\t\t",MapFiles())
 pathcheck(True,"Map assets\t",MapAssets())
 print("")
 
-def link_files(s,target):
+def link(s,target):
 	try:
-		os.link(    str(GetGModPath()/s), str(target/ s))
+		os.link(    str(s), str(target))
 	except OSError as e:
-		shutil.copy(str(GetGModPath()/s), str(target/ s))
-		
+		shutil.copy(str(s), str(target))
+
+def CreateMover(dest):
+	def mov(s,d):
+		if (s).is_dir():
+			distutils.dir_util.copy_tree(str(s), str(dest / d))
+		else:
+			shutil.copy(str(s), str(dest/d))
+	return mov
 				
 def RebuildHammerRoot():
-	if not (HammerRoot()/ 'garrysmod' / 'garrysmod_dir.vpk').exists():
+	HAMMER= HammerRoot()
+	mov = CreateMover(HAMMER)
+
+	if not (HAMMER/ GDIR / 'garrysmod_dir.vpk').exists():
 		print("missing hammer copy, copying")
-		(HammerRoot()/ 'garrysmod' / 'cfg').mkdir(parents=True, exist_ok=True)
-		def mov(s,d):
-			if (GetGModPath()/s).is_dir():
-				distutils.dir_util.copy_tree(str(GetGModPath()/s), str(HammerRoot()/ d))
-			else:
-				shutil.copy(str(GetGModPath()/s), str(HammerRoot()/ d))
-			
-		link_files("garrysmod/garrysmod_000.vpk",HammerRoot())
-		link_files("garrysmod/garrysmod_001.vpk",HammerRoot())
-		link_files("garrysmod/garrysmod_002.vpk",HammerRoot())
-		link_files("garrysmod/garrysmod_dir.vpk",HammerRoot())
-		mov("platform/platform_misc_000.vpk",'garrysmod/')
-		mov("platform/platform_misc_dir.vpk",'garrysmod/')
-		mov("garrysmod/steam.inf",'garrysmod/')
-		with (HammerRoot() / 'garrysmod/steam_appid.txt').open('wb') as f:
+		(HAMMER/ GDIR / 'cfg').mkdir(parents=True, exist_ok=True)
+
+		link(GetGModPath() / "garrysmod/garrysmod_000.vpk",HAMMER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_001.vpk",HAMMER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_002.vpk",HAMMER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_dir.vpk",HAMMER/GDIR)
+		#mov(CSGOPath() / "platform/platform_pak01_dir.vpk",'garrysmod/')
+		#mov(CSGOPath() / "platform/platform_pak01_dir.vpk",'garrysmod/')
+		mov(SDK2013MPPath() / "platform/platform_misc_000.vpk",'garrysmod/')
+		mov(SDK2013MPPath() / "platform/platform_misc_dir.vpk",'garrysmod/')
+		mov(GetGModPath() / "garrysmod/steam.inf",'garrysmod/')
+		mov(GetGModPath() / "garrysmod/detail.vbsp",'garrysmod/')
+		with (HAMMER / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
 			
-		mov("bin/",'bin/')
-		mov("platform/",'platform/')
-		mov("garrysmod/resource/",'garrysmod/resource/')
+		mov(SDK2013MPPath() / "bin/",'bin/')
+		mov(SDK2013MPPath() / "platform/",'platform/')
+		mov(GetGModPath() / "garrysmod/resource/",'garrysmod/resource/')
 		
-		# hammer needs shaders
+		# hammer needs shaders?
 		with vpk.open(str(GetGModPath()/"sourceengine/hl2_misc_dir.vpk")) as hl2misc:
 			for fpath in hl2misc:
 				if fpath.startswith("shaders/"):
-					(HammerRoot() / 'garrysmod' / Path(fpath).parents[0]).mkdir(parents=True, exist_ok=True)
+					(HAMMER / GDIR / Path(fpath).parents[0]).mkdir(parents=True, exist_ok=True)
 					
-					with hl2misc.get_file(fpath) as input,(HammerRoot() / 'garrysmod' / Path(fpath)).open('wb') as output:
+					with hl2misc.get_file(fpath) as input,(HAMMER / GDIR / Path(fpath)).open('wb') as output:
 						copyfileobj(input, output)
+		#mov(ToolkitRoot() / "extras/slammin_2013mp/bin/",'bin/') # no work because limits
+		mov(ToolkitRoot() / "extras/hammerplusplus_2013mp/bin/",'bin/')
 					
 def RebuildCompilerRoot():
-	if not (CompilerRoot()/ 'garrysmod' / 'garrysmod_dir.vpk').exists():
+	COMPILER = CompilerRoot()
+	mov = CreateMover(COMPILER)
+	if not (COMPILER/ GDIR / 'garrysmod_dir.vpk').exists():
 		print("missing compiler root, copying")
-		(CompilerRoot()/ 'garrysmod' / 'cfg').mkdir(parents=True, exist_ok=True)
-		def mov(s,d):
-			if (GetGModPath()/s).is_dir():
-				distutils.dir_util.copy_tree(str(GetGModPath()/s), str(CompilerRoot()/ d))
-			else:
-				shutil.copy(str(GetGModPath()/s), str(CompilerRoot()/ d))
-			
+		(COMPILER/ GDIR / 'cfg').mkdir(parents=True, exist_ok=True)
 
-		link_files("garrysmod/garrysmod_000.vpk",CompilerRoot())
-		link_files("garrysmod/garrysmod_001.vpk",CompilerRoot())
-		link_files("garrysmod/garrysmod_002.vpk",CompilerRoot())
-		link_files("garrysmod/garrysmod_dir.vpk",CompilerRoot())
-		mov("platform/platform_misc_000.vpk",'garrysmod')
-		mov("platform/platform_misc_dir.vpk",'garrysmod')
-		mov("garrysmod/steam.inf",'garrysmod')
+		link(GetGModPath() / "garrysmod/garrysmod_000.vpk",COMPILER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_001.vpk",COMPILER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_002.vpk",COMPILER/GDIR)
+		link(GetGModPath() / "garrysmod/garrysmod_dir.vpk",COMPILER/GDIR)
+		mov(GetGModPath()/"platform/platform_misc_000.vpk",GDIR)
+		mov(GetGModPath()/"platform/platform_misc_dir.vpk",GDIR)
+		mov(GetGModPath()/"garrysmod/steam.inf",GDIR)
+		mov(GetGModPath()/"garrysmod/detail.vbsp",'garrysmod/')
 
-		
-		with (CompilerRoot() / 'garrysmod/steam_appid.txt').open('wb') as f:
+		with (COMPILER / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
-		mov("bin",'bin')
+		mov(GetGModPath() / "bin",'bin')
+		#mov(CSGOPath() / "bin/",'bin/')
+		#mov(CSGOPath() / "platform/",'platform/')
+		#mov(ToolkitRoot() / "extras/metabsp/bin/",'bin/')
 
 
 def BuildHammerGameConfig():
@@ -113,7 +148,7 @@ def BuildHammerGameConfig():
 		GameConfig = vdf.parse(template)
 
 	conf=GameConfig["Configs"]["Games"]["GMODMAPDEV"]
-	conf["GameDir"]=str(HammerRoot()/'garrysmod')
+	conf["GameDir"]=str(HammerRoot()/GDIR)
 	Hammer=conf["Hammer"]
 	Hammer["BSP"] = str(CompilerRoot()/'bin/win64/vbsp.exe')
 	Hammer["Vis"] = str(CompilerRoot()/'bin/win64/vvis.exe')
@@ -170,7 +205,7 @@ def BuildGameInfo(target):
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_sound_misc.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_misc.vpk"
 	SearchPaths["gamebin"]=GetGModPath()/"bin"
-	SearchPaths["game+game_write"]=GetGModPath()/'garrysmod'
+	SearchPaths["game+game_write"]=GetGModPath()/GDIR
 	SearchPaths["game+download"]=GetGModPath()/'garrysmod/download'
 	SearchPaths["platform"]=GetGModPath()/"platform/platform_misc.vpk"
 	
@@ -188,50 +223,39 @@ def GenerateUserConfig():
 			return map.replace(".vmf","")
 		return "gm_mymap"
 	
-	template=r"""@rem see common.cmd for potential configuration options
-
-@set SteamAppUser={SteamAppUser}
-@set SteamPath={SteamPath}
-
-@set SteamPathAlt={SteamPathAlt}
-
-@set mapfolder={mapfolder}
-@set version_file=%mapfolder%\ver_meta3.txt
-@set mapdata={mapdata}
-@set GameDir={GameDir}
-@set GameExeDir={GameExeDir}
-
-@set mapwsid=123456
-@set mapfile={mapfile}
-@set mapname={mapname}_%BUILD_VERSION%
-
-"""
+	
 	
 	with (ToolkitRoot() / 'user_config.cmd').open('w') as output:
+		#TODO getenv?
 		mapfile = (MapFiles() / 'metastruct_3.vmf').exists() and 'metastruct_3' or GetAnyMap()
 		mapname = mapfile=="metastruct_3" and "gm_construct_m3" or "gm_mymap"
 		
-		output.write( template.format( SteamAppUser="ChangeMe",
+		output.write( USERCONFIG_TEMPLATE.format( SteamAppUser="ChangeMe",
 			SteamPath=GetSteamPath(),
 			SteamPathAlt=GetGModPath().parents[0],
 			mapfolder=MapFiles(),
 			mapdata=MapAssets(),
 			mapfile=mapfile,
 			mapname=mapname,
-			GameDir=GetGModPath()/'garrysmod',
+			GameDir=GetGModPath()/GDIR,
 			GameExeDir=GetGModPath()
 		))
 	print("Generated user_config.cmd, edit it!")
-GenerateUserConfig()
-RebuildHammerRoot()
-write_mountcfg(HammerRoot() / 'garrysmod/cfg/mount.cfg')
 
-RebuildCompilerRoot()
-write_mountcfg(CompilerRoot() / 'garrysmod/cfg/mount.cfg')
+def main():
+	
+	GenerateUserConfig()
+	RebuildHammerRoot()
+	write_mountcfg(HammerRoot() / 'garrysmod/cfg/mount.cfg')
 
-BuildHammerGameConfig()
+	RebuildCompilerRoot()
+	write_mountcfg(CompilerRoot() / 'garrysmod/cfg/mount.cfg')
 
-BuildGameInfo(HammerRoot() / 'garrysmod/gameinfo.txt')
-BuildGameInfo(CompilerRoot() / 'garrysmod/gameinfo.txt')
+	BuildHammerGameConfig()
 
-input("\nPress ENTER to continue.")
+	BuildGameInfo(HammerRoot() / 'garrysmod/gameinfo.txt')
+	BuildGameInfo(CompilerRoot() / 'garrysmod/gameinfo.txt')
+
+	input("\nPress ENTER to continue.")
+
+main()

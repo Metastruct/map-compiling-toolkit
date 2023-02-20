@@ -7,7 +7,8 @@
 
 
 @set VRADHDR=-softsun 25 -bounce 24
-@set VBSPEXTRAS=-notjunc
+@rem @set VBSPEXTRAS=-notjunc
+@set VBSPEXTRAS=
 @rem -StaticPropSampleScale 0.25 -StaticPropLighting
 @rem @set VRADHDR=-softsun 15 -bounce 32 -StaticPropPolys -StaticPropLighting -final
 @rem todo move to configs
@@ -109,9 +110,15 @@ set TESTBUILD=1
 :docopy
 @set targetvmf=%mapfolder%\%mapname%.vmf
 @set targetrad=%mapfolder%\%mapname%.rad
+@set targetvbsp=%VProject%\%mapfile%.vbsp
 @COPY "%mapfolder%\%mapfile%.vmf" "%targetvmf%"
 @if ERRORLEVEL 1 goto failed
 @COPY "%mapfolder%\%mapfile%.rad" "%targetrad%" 2>nul >nul
+
+@rem this has to go where the vbsp thinks vproject is and it's referenced by the root vmf so it has to retain its name
+@COPY "%mapfolder%\%mapfile%.vbsp" "%targetvbsp%" 2>nul >nul
+@COPY "%mapfolder%\detail_custom.vbsp" "%VProject%\detail_custom.vbsp" 2>nul >nul
+@COPY "%mapfolder%\detail.vbsp" "%VProject%\detail.vbsp" 2>nul >nul
 
 @rem ===================================
 
@@ -215,7 +222,7 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "%GameDir%\maps\%mapname%.bsp.reslister"
 @if ERRORLEVEL 1 goto failed
 @cd "%mapdata%"
-"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
+"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" 
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
 
@@ -245,7 +252,7 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @echo Bspzipping the potentially missing
 
 @cd "%GameDir%\data"
-"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\data\addlist.txt" "%GameDir%\maps\%mapname%.bsp.new" >> "%CMD_LC_ROOT%\bspzip_out.log"
+"%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\data\addlist.txt" "%GameDir%\maps\%mapname%.bsp.new" 
 @if ERRORLEVEL 1 goto failed
 
 move "%GameDir%\maps\%mapname%.bsp.new" "%GameDir%\maps\%mapname%.bsp.newx"

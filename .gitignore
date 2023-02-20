@@ -14,3 +14,9 @@
 *.pyc
 /vbspautotest/build/setup
 /vbspautotest/env
+/vbspautotest/
+/hack_trigger_remover
+/_game_compiling/
+/_game_hammer/
+/_user_config.cmd
+/*_game_hammer
