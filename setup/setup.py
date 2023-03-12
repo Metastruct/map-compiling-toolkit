@@ -4,11 +4,8 @@ import shutil
 from shutil import copyfileobj
 import vpk
 import traceback
-import sys
+import sys,time
 import distutils.dir_util
-
-
-import sys 
 
 def has_debugger() -> bool:
     return hasattr(sys, 'gettrace') and sys.gettrace() is not None
@@ -78,11 +75,22 @@ def link(s,target):
 def CreateMover(dest):
 	def mov(s,d):
 		if (s).is_dir():
+			#print("copy_tree",s,dest/d)
 			distutils.dir_util.copy_tree(str(s), str(dest / d))
 		else:
 			shutil.copy(str(s), str(dest/d))
 	return mov
-				
+
+import errno,stat
+def remove_error_handler(func, path, execinfo):
+	e = execinfo[1]
+	if e.errno == errno.ENOENT or not os.path.exists(path):
+		return
+	if func in (os.rmdir, os.remove) and e.errno == errno.EACCES:
+		os.chmod(path, stat.S_IRWXU| stat.S_IRWXG| stat.S_IRWXO)
+		func(path) 
+	raise e
+
 def RebuildHammerRoot():
 	HAMMER= HammerRoot()
 	mov = CreateMover(HAMMER)
@@ -91,14 +99,6 @@ def RebuildHammerRoot():
 		print("missing hammer copy, copying")
 		(HAMMER/ GDIR / 'cfg').mkdir(parents=True, exist_ok=True)
 
-		link(GetGModPath() / "garrysmod/garrysmod_000.vpk",HAMMER/GDIR)
-		link(GetGModPath() / "garrysmod/garrysmod_001.vpk",HAMMER/GDIR)
-		link(GetGModPath() / "garrysmod/garrysmod_002.vpk",HAMMER/GDIR)
-		link(GetGModPath() / "garrysmod/garrysmod_dir.vpk",HAMMER/GDIR)
-		#mov(CSGOPath() / "platform/platform_pak01_dir.vpk",'garrysmod/')
-		#mov(CSGOPath() / "platform/platform_pak01_dir.vpk",'garrysmod/')
-		mov(SDK2013MPPath() / "platform/platform_misc_000.vpk",'garrysmod/')
-		mov(SDK2013MPPath() / "platform/platform_misc_dir.vpk",'garrysmod/')
 		mov(GetGModPath() / "garrysmod/steam.inf",'garrysmod/')
 		mov(GetGModPath() / "garrysmod/detail.vbsp",'garrysmod/')
 		with (HAMMER / 'garrysmod/steam_appid.txt').open('wb') as f:
@@ -106,17 +106,27 @@ def RebuildHammerRoot():
 			
 		mov(SDK2013MPPath() / "bin/",'bin/')
 		mov(SDK2013MPPath() / "platform/",'platform/')
-		mov(GetGModPath() / "garrysmod/resource/",'garrysmod/resource/')
-		
-		# hammer needs shaders?
-		with vpk.open(str(GetGModPath()/"sourceengine/hl2_misc_dir.vpk")) as hl2misc:
+		#mov(GetGModPath() / "garrysmod/resource/",'garrysmod/resource/')
+		hpp=HAMMER/'bin'/'hammerplusplus'
+		print("hpp=",hpp)
+		if hpp.is_dir():
+			print("Deleting old hammerplusplus from copy...")
+			for i in hpp.glob('*'):
+				if not i.is_dir():
+					i.unlink()
+
+		# We don't want to mount hl2_misc_dir as game so we extract the shaders
+		# ATTN: sourceengine/hl2_misc_dir.vpk shaders do not work with hammer++ 
+		with vpk.open(str(SDK2013MPPath()/"hl2"/"hl2_misc_dir.vpk")) as hl2misc:
 			for fpath in hl2misc:
 				if fpath.startswith("shaders/"):
 					(HAMMER / GDIR / Path(fpath).parents[0]).mkdir(parents=True, exist_ok=True)
 					
 					with hl2misc.get_file(fpath) as input,(HAMMER / GDIR / Path(fpath)).open('wb') as output:
 						copyfileobj(input, output)
-		#mov(ToolkitRoot() / "extras/slammin_2013mp/bin/",'bin/') # no work because limits
+
+		#hpp.mkdir(exist_ok=False)
+		#mov(ToolkitRoot() / "extras/slammin_2013mp/bin/",'bin/') # no work because limits :(
 		mov(ToolkitRoot() / "extras/hammerplusplus_2013mp/bin/",'bin/')
 					
 def RebuildCompilerRoot():
@@ -194,6 +204,10 @@ def BuildGameInfo(target):
 	conf["sourceengine"]=GetGModPath()/'sourceengine'
 	
 	SearchPaths=conf["FileSystem"]["SearchPaths"]
+	
+	# The game needs to be first for hammer++
+	# moved to template
+	#SearchPaths["game"]=HammerRoot()/GDIR
 	SearchPaths["game"]=MapAssets()
 	
 	SearchPaths["game"]=TF2Path("tf")/"tf2_sound_misc.vpk"
@@ -204,10 +218,12 @@ def BuildGameInfo(target):
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_textures.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_sound_misc.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_misc.vpk"
+	SearchPaths["game"]=GetGModPath()/"sourceengine"
+	SearchPaths["platform"]=GetGModPath()/"sourceengine"
 	SearchPaths["gamebin"]=GetGModPath()/"bin"
 	SearchPaths["game+game_write"]=GetGModPath()/GDIR
 	SearchPaths["game+download"]=GetGModPath()/'garrysmod/download'
-	SearchPaths["platform"]=GetGModPath()/"platform/platform_misc.vpk"
+	#SearchPaths["platform"]=GetGModPath()/"platform/platform_misc.vpk"
 	
 	with target.open('w') as out:
 		vdf.dump(gameinfo, out, pretty=True)

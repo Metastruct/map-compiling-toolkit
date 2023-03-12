@@ -68,9 +68,9 @@
 
 @rem REQUIRED configuration folder, needs gameinfo.txt at least
 @set toolkit_root=%~d0%~p0
-@set VProject_Hammer=%toolkit_root%\game_hammer\garrysmod
-@set VProject=%toolkit_root%\game_compiling\garrysmod
-@set compilers_dir=%toolkit_root%\game_compiling\bin\win64
+@set VProject_Hammer=%toolkit_root%game_hammer\garrysmod
+@set VProject=%toolkit_root%game_compiling\garrysmod
+@set compilers_dir=%toolkit_root%game_compiling\bin\win64
 
 
 @IF EXIST "%VProject_Hammer%\gameinfo.txt" @GOTO VProject_Hammer_fixskip

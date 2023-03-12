@@ -12,9 +12,7 @@
 		SearchPaths
 		{
 			"mod+mod_write+default_write_path"		"|gameinfo_path|."
-
-
-			"game"				"|all_source_engine_paths|hl2"
+			"game"				"|gameinfo_path|."
 			"platform"			"|all_source_engine_paths|platform"
 			
 		}
