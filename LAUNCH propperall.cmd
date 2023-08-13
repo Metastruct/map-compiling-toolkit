@@ -35,14 +35,30 @@
 
 :found
 @cd /d "%mapfolder%\propper"
+@echo Directory: %cd%
 @echo.
+@bash --help > nul
+@if ERRORLEVEL 1 @goto nobash
+
+@echo running propperall.sh
+@bash propperall.sh
+@if ERRORLEVEL 1 @goto failed
+
+@goto :proppered
+
+:nobash
+@echo bash not found, running vanilla (slow, no error detection)
 @for /r %%i in (*.vmf) do @(
 	@echo Processing "%%i"   Log: "%%i.log"
 	"%VBSPNAME%" "%%i" 1>"%%i.log"
 	@if ERRORLEVEL 1 goto failed
 )
+:proppered
+@for /r %%i in (*.tmp) do @(
+	attrib +h "%%i"
+)
 
-@echo "====== Copying files also for hammer usage ======="
+@echo ====== Copying files also for hammer usage =======
 ROBOCOPY "%GameDir%\materials\models\mspropp" "%PROPPER_TARGET%\materials\models\mspropp" /MOV /s /NFL  /NDL /NJS /NJH /NP /is /it
 ROBOCOPY "%GameDir%\models\props\metastruct" "%PROPPER_TARGET%\models\props\metastruct" /MOV /s /NFL  /NDL /NJS /NJH /NP /is /it
 
@@ -65,7 +81,6 @@ ROBOCOPY "%GameDir%\models\props\metastruct" "%PROPPER_TARGET%\models\props\meta
 @echo ====== FINISHED =======
 @echo =======================
 
-@echo Press ENTER to continue.
 @pause > nul
 
 @goto gtfo
