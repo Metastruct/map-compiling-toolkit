@@ -126,7 +126,7 @@ set TESTBUILD=1
 
 @echo %NL% [33m# VMF Merging [0m
 
-extras\vmfii "%targetvmf%" "%targetvmf%" --fgd "%FGDS%" >> %mapfolder%\%mapname%.log
+extras\vmfii "%targetvmf%" "%targetvmf%" --instancedir "%mapfolder%" --fgd "%FGDS%" >> %mapfolder%\%mapname%.log
 @if ERRORLEVEL 1 goto failed
 
 
