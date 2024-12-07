@@ -5,20 +5,20 @@
 @set NL=^^^%NLM%%NLM%^%NLM%%NLM%
 @rem ======================
 
-
-@set VRADHDR=-softsun 25 -bounce 24
-@rem @set VBSPEXTRAS=-notjunc
-@set VBSPEXTRAS=
-@rem -StaticPropSampleScale 0.25 -StaticPropLighting
-@rem @set VRADHDR=-softsun 15 -bounce 32 -StaticPropPolys -StaticPropLighting -final
-@rem todo move to configs
+@set VRADHDR=-softsun 0 -bounce 1
+@set VBSPEXTRAS=-notjunc -blocksize 2048
 @set VRADLDR=%VRADHDR%
 @set TESTBUILD=0
 @set AUTO_UPLOAD_MAP=0
 @set ORIGFOLDER=%CD%
 @rem Store current folder
 @set CMD_LC_ROOT=%~dp0
-@set bspzipexe=bspzip
+
+@set maptoolkit_temp_addon=%GameDir%\addons\maptoolkit_temp
+@rmdir "%maptoolkit_temp_addon%" 2>nul
+
+@set bspzipexe=%CMD_LC_ROOT%extras\gmazip.py
+
 
 @cd /d "%CMD_LC_ROOT%"
 @call common.cmd
@@ -40,7 +40,6 @@
 @call common.cmd
 @cd /d "%CMD_LC_ROOT%"
 
-@del /S /Q "%CMD_LC_ROOT%\bspzip_out.log" 2>nul >nul
 
 @if "%1"=="b" @goto buildnext
 @if "%1"=="B" @goto buildnext
@@ -97,17 +96,18 @@ set TESTBUILD=1
 
 
 
-
-
-
-
-
-
-
 @echo %NL% [33m# Compiling version '%BUILD_VERSION%' target bsp: "%mapfolder%\%mapname%.bsp"[0m
 
 
-:docopy
+
+@echo %NL% [33m# Cleaning up bspzip artefacts and setting up map files/folders... [0m
+@rem Clean bspzip before retrying in case we have old files
+@del /S /Q "%CMD_LC_ROOT%\bspzip_out.log" 2>nul >nul
+@set BSPZIP_GMA_OUT=%GameDir%\maps\%mapname%
+@del /S /Q "%BSPZIP_GMA_OUT%" 2>nul >nul
+@if not exist "%BSPZIP_GMA_OUT%" @mkdir "%BSPZIP_GMA_OUT%"
+mklink /J %maptoolkit_temp_addon% %BSPZIP_GMA_OUT%
+
 @set targetvmf=%mapfolder%\%mapname%.vmf
 @set targetrad=%mapfolder%\%mapname%.rad
 @set targetvbsp=%VProject%\%mapfile%.vbsp
@@ -222,6 +222,10 @@ COPY "%mapfolder%\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp"
 extras\reslister.exe "--format=bspzip" "%mapfolder%\%mapname%.vmf" "%mapdata%" "%GameDir%\maps\%mapname%.bsp.reslister"
 @if ERRORLEVEL 1 goto failed
 @cd "%mapdata%"
+python -V
+@if ERRORLEVEL 1 goto failed
+
+
 "%bspzipexe%" -addlist "%GameDir%\maps\%mapname%.bsp" "%GameDir%\maps\%mapname%.bsp.reslister" "%GameDir%\maps\%mapname%.bsp.new" 
 @if ERRORLEVEL 1 goto failed
 @cd /d "%CMD_LC_ROOT%"
@@ -247,6 +251,8 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 @cd /d "%CMD_LC_ROOT%"
 @call extras\gmodcommander.cmd missing "%mapname%"
 @if ERRORLEVEL 1 goto missingcsstf_fail
+@if not exist "%GameDir%\data\addlist.txt" @goto missingcsstf_fail
+
 @cd /d "%CMD_LC_ROOT%"
 
 @echo Bspzipping the potentially missing
@@ -268,7 +274,7 @@ move "%GameDir%\maps\%mapname%.bsp.newx" "%GameDir%\maps\%mapname%.bsp"
 
 @goto missingcsstf_finish
 :missingcsstf_fail
-@echo ">>>>>>> !!!FAILED!!! (non fatal) "
+@echo ">>>>>>> !!!FAILED!!! (non fatal). See %GameDir%\console.log"
 :missingcsstf_skip
 @echo Skipping...
 :missingcsstf_finish
@@ -377,11 +383,6 @@ copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
 @echo SKIPPING: Seed file missing "%mapfolder%\%mapfile%.lm.txt"
 :navmesh_end
 
-:docompress
-@echo ================= Compressing to .bz2 files for fastdl ================= 
-@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.bsp"
-@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\graphs\%mapname%.ain"
-
 @rem Check navmesh existing and warn if not
 @set size=0
 @for /f %%i in ("%targetnav%") do set size=%%~zi
@@ -389,16 +390,13 @@ copy /Y "%mapfolder%\%mapfile%.lm.txt" "%GameDir%"\data\navmesh_landmarks.txt
 @echo NAVMESH GENERATION FAILED (%targetnav%). Size=%size%
 @goto navcskip
 :navok
-@start /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
+@rem @start "RUNBZIP2" /low /min extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
 :navcskip
 
 @echo ================= TESTING MAP (HDR) ================= 
-
+@cd /d "%CMD_LC_ROOT%"
 @extras\flashcmd.exe >nul 2>nul
-if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1024 -h 768 +sv_noclipspeed 25 +mat_hdr_level 2 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
-extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
-
-
+if not %TESTBUILD%==1 call "LAUNCH game.cmd" -multirun -window -w 1280 -h 1024 +sv_noclipspeed 25 +mat_hdr_level 2 +mat_specular 1 +sv_cheats 1 -disableluarefresh -dev 2 +developer 2 +map %mapname%
 
 
 
@@ -419,6 +417,7 @@ extras\bzip2.exe -kf -9 "%GameDir%\maps\%mapname%.nav"
 @GOTO gitpush_ending
 
 :gitpush_dirty
+@cd /d "%CMD_LC_ROOT%"
 @extras\flashcmd.exe >nul 2>nul
 @echo [33m# Uncommitted changes, launching command prompt for you.[0m
 
@@ -470,7 +469,7 @@ popd
 
 :failed
 @echo COMPILE FAILURE!
-
+@echo Press enter to continue (this will unlink testing addon)
 @pause > nul
 @goto gtfo
 
@@ -492,10 +491,12 @@ popd
 
 
 :uploader
+@rmdir "%maptoolkit_temp_addon%" 2>nul
 @cd /d "%CMD_LC_ROOT%"
 @call publish_map.cmd
 @goto gtfo
 
 :gtfo
 cd "%ORIGFOLDER%"
+@rmdir "%maptoolkit_temp_addon%" 2>nul
 @echo.

@@ -44,27 +44,27 @@
 @goto out
 
 :missing
-start "MAP TOOLKIT: VMT BUNDLE" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -disableluarefresh -noworkshop -nosound -nojoy -nop4 -windowed %GCNOADDONS% -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha writemissing
+start "MAP TOOLKIT: VMT BUNDLE" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -disableluarefresh -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4 -windowed -insecure -nohltv -condebug -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha writemissing
 @goto win
 
 :trigger_extract
-start "MAP TOOLKIT: LUATRIGGERS" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -noworkshop -nosound -nojoy -nop4 %GCNOADDONS% -windowed -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha trigger_extract
+start "MAP TOOLKIT: LUATRIGGERS" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4 -windowed -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha trigger_extract
 @goto win
 
 :bsprezip
-start "MAP TOOLKIT: bsprezip" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -noworkshop -nosound -nojoy -nop4 %GCNOADDONS% -windowed -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha bsprezip
+start "MAP TOOLKIT: bsprezip" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4 -windowed -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha bsprezip
 @goto win
 
 :cubemaps_ldr
-start "MAP TOOLKIT: LDR" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4 %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
+start "MAP TOOLKIT: LDR" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4 -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 0 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 :cubemaps_hdr
-start "MAP TOOLKIT: HDR" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4  %GCNOADDONS% -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
+start "MAP TOOLKIT: HDR" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -noworkshop -nosound -nojoy -nop4  -windowed -console -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +sv_cheats 1 +mat_hdr_level 2 +mat_specular 0 +exec gmodcommander +con_nprint_bgalpha cubemaps
 @goto win
 
 :navmesh
-start "MAP TOOLKIT: NAV" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -console -noworkshop -nosound -nojoy -nop4 %GCNOADDONS% -windowed -disableluarefresh -insecure -nohltv -condebug -textmode -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha navmesh
+start "MAP TOOLKIT: NAV" /D "%GameExeDir%" /wait /min "%GAME_EXE%" -game "%GameDir%" -multirun -w 1024 -h 1024 -console -noworkshop -nosound -nojoy -nop4 -windowed -disableluarefresh -insecure -nohltv -condebug -toconsole +map %2 +exec gmodcommander +con_nprint_bgalpha navmesh
 @goto win
 
 

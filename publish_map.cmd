@@ -4,30 +4,32 @@
 @call build_version.cmd
 @cd /d "%CMD_LC_ROOT%"
 
-@set targetpath=%mapfolder%\%mapfile%
+@set TARGET_TMP=%mapfolder%\%mapfile%.temp.delme
+@set sourcepath=%mapfolder%\%mapfile%
+@set bspzip_gma_path=%GameDir%\maps\%mapname%
+@set gma_path=%mapfolder%\%mapfile%.gma
 
-@if not exist "%targetpath%" @mkdir "%targetpath%"
+del /s /q "%TARGET_TMP%" >nul
+@if not exist "%TARGET_TMP%" @mkdir "%TARGET_TMP%"
 
-@rem # Can we do this somehow better?
-@if not exist "%targetpath%\maps" @mkdir "%targetpath%\maps"
-@if not exist "%targetpath%\addon.json" (
-	@echo File "%targetpath%\addon.json" does not exist!
+robocopy "%bspzip_gma_path%" "%TARGET_TMP%" /NFL /NDL /NJH /NJS /nc /ns /np /S /IS /IT
+robocopy "%sourcepath%" "%TARGET_TMP%" /NFL /NDL /NJH /NJS /nc /ns /np /S /IS /IT
+@if not exist "%TARGET_TMP%\maps" @mkdir "%TARGET_TMP%\maps"
+@if not exist "%TARGET_TMP%\addon.json" (
+	@echo File "%TARGET_TMP%\addon.json" does not exist!
 	@goto fail
 )
 
-@del /S /Q "%targetpath%\maps\*.bsp"
-@del /S /Q "%targetpath%\maps\*.nav"
-@del /S /Q "%targetpath%\maps\*.lmp"
-@del /S /Q "%targetpath%\maps\graphs\*.ain"
 
-@echo Uploading %mapname%
+@echo %NL% [33m# Uploading %mapname% [0m
+
 @if not exist "%GameDir%\maps\%mapname%.bsp" @(
 	@echo Missing map!
 	@goto fail
 )
 
 
-copy "%GameDir%\maps\%mapname%.bsp" "%targetpath%\maps\"
+copy "%GameDir%\maps\%mapname%.bsp" "%TARGET_TMP%\maps\"
 @if errorlevel 1 @goto fail
 
 
@@ -35,35 +37,35 @@ copy "%GameDir%\maps\%mapname%.bsp" "%targetpath%\maps\"
 @goto hack_triggerstrip_skip_bundle
 
 :hack_triggerstrip_bundle
-copy "%GameDir%\maps\%mapname%_triggers.lmp" "%targetpath%\maps\"
+copy "%GameDir%\maps\%mapname%_triggers.lmp" "%TARGET_TMP%\maps\"
 @if errorlevel 1 @goto fail
-copy "%GameDir%\maps\%mapname%_trigmesh.lmp" "%targetpath%\maps\"
+copy "%GameDir%\maps\%mapname%_trigmesh.lmp" "%TARGET_TMP%\maps\"
 @if errorlevel 1 @goto fail
 
 
 :hack_triggerstrip_skip_bundle
 
 @if exist "%GameDir%\maps\graphs\%mapname%.ain" @(
-	@if not exist "%targetpath%\maps\graphs" @mkdir "%targetpath%\maps\graphs"
-	copy "%GameDir%\maps\graphs\%mapname%.ain" "%targetpath%\maps\graphs"
+	@if not exist "%TARGET_TMP%\maps\graphs" @mkdir "%TARGET_TMP%\maps\graphs"
+	copy "%GameDir%\maps\graphs\%mapname%.ain" "%TARGET_TMP%\maps\graphs"
 )
 
 
 @if %DONT_PUBLISH_NAV%==1 @goto nocopynav
-@if exist "%GameDir%\maps\%mapname%.nav" copy "%GameDir%\maps\%mapname%.nav" "%targetpath%\maps\"
+@if exist "%GameDir%\maps\%mapname%.nav" copy "%GameDir%\maps\%mapname%.nav" "%TARGET_TMP%\maps\"
 :nocopynav
 
-@if exist "%targetpath%.gma" @del "%targetpath%.gma"
+@if exist "%gma_path%" @del "%gma_path%"
 
-@echo Creating .gma to "%targetpath%.gma"
+@echo Creating .gma to "%gma_path%"
 @echo.
-%GameExeDir%/bin/gmad create -folder "%targetpath%" -out "%targetpath%.gma"
+%GameExeDir%/bin/gmad create -folder "%TARGET_TMP%" -out "%gma_path%" -warninvalid
 @if errorlevel 1 @goto fail
 
-@if not exist "%targetpath%.gma" @goto fail
+@if not exist "%gma_path%" @goto fail
 
-@if not exist "%targetpath%.jpg" (
-	@echo File "%targetpath%.jpg" does not exist!
+@if not exist "%sourcepath%.jpg" (
+	@echo File "%sourcepath%.jpg" does not exist!
 	@goto fail
 )
 
@@ -75,7 +77,7 @@ copy "%GameDir%\maps\%mapname%_trigmesh.lmp" "%targetpath%\maps\"
 )
 
 @echo.
-%GameExeDir%/bin/gmpublish update -addon "%targetpath%.gma" -id "%mapwsid%" -changes "%CHANGES%"
+%GameExeDir%/bin/gmpublish update -addon "%gma_path%" -id "%mapwsid%" -changes "%CHANGES%"
 @if errorlevel 1 @goto fail
 :skippublish
 
