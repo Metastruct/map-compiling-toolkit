@@ -18,6 +18,8 @@ Hammer++ does not use the GameConfig.txt, instead it uses its own GameConfig.txt
 If not found, it copies the normal game configuration.
 Keep this in mind when following any tutorials.
 
+HLMV++ comes bundled with the download, it is optional and not required for Hammer++ to work.
+
 --- Uninstallation ---
 To uninstall, simply delete the hammerplusplus.exe
 You can also optionally delete the hammerplusplus folder, but this will remove all saved settings for Hammer++.

@@ -1,7 +1,7 @@
 // This FGD is mandatory for Hammer++
 // The version is compared against a hardcoded version internally to detect old FGD versions
 // A error will be shown if this is missing/mismatch
-@version(7)
+@version(9)
 
 // The ExtendClass is a new special class type
 // It should take the name of another class in other FGDs
@@ -26,15 +26,15 @@
 [
 ]
 
-@ExtendClass light(sun, global) light(ambient, global) = light_environment : ""
+@ExtendClass light(sun, global) light(ambient, global) direction(angles, invert_pitch) = light_environment : ""
 [
 ]
 
-@ExtendClass light(sun) = light_directional : ""
+@ExtendClass light(sun) direction(angles, invert_pitch) = light_directional : ""
 [
 ]
 
-@ExtendClass fogcontroller() = env_fog_controller : ""
+@ExtendClass fogcontroller() direction(angles) = env_fog_controller : ""
 [
 ]
 
@@ -49,7 +49,6 @@
 @ExtendClass direction(PostSpawnDirection) = env_entity_maker : ""
 [
 ]
-
 
 @ExtendClass direction(angles) = env_physimpact : ""
 [
@@ -83,7 +82,7 @@
 [
 ]
 
-@ExtendClass catapult() = trigger_catapult : ""
+@ExtendClass catapult() direction(launchDirection) = trigger_catapult : ""
 [
 ]
 
@@ -119,6 +118,9 @@
 [
 ]
 
+@ExtendClass sun() = env_sun : ""
+[
+]
 
 @PointClass worldtext() = editor_text : 
 	"Hammer-only entity that displays a text message oriented in the world, at its origin."
@@ -129,4 +131,3 @@
 	textsize(float) : "Text Size" : 10 : "Text Size."
 	color(color255) : "Color" : "255 255 255"
 ]
-
