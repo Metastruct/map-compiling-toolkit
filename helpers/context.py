@@ -28,7 +28,7 @@ class TempAddonJunction:
         LOGGER.info(
             "temp_addon_junction.creating",
             link=str(self.link_path.resolve()),
-            target=str(self.target)
+            target=str(self.target),
         )
         create_junction(self.target, self.link_path)
         return self
@@ -65,7 +65,6 @@ def load_common_env(root: Path, build_version: int | None = None) -> dict[str, s
     assign_environment_value(env, user, "TRIGGER_STRIPPING_HACK_ENABLE", "0")
     assign_environment_value(env, user, "DONT_PUBLISH_NAV", "0")
     assign_environment_value(env, user, "ENABLE_BSPREZIP", "0")
-    assign_environment_value(env, user, "prompt", "\x1b[32m$P$G\x1b[0m")
     assign_environment_value(env, user, "SteamUser", "%SteamAppUser%")
     assign_environment_value(env, user, "SteamPath", r"C:\Program Files (x86)\Steam")
     assign_environment_value(env, user, "SteamPathAlt", "%SteamPath%")
@@ -178,10 +177,6 @@ class BuildContext:
         return self.root / "extras" / "vmfii"
 
     @property
-    def launch_game_cmd(self) -> Path:
-        return self.root / "LAUNCH game.cmd"
-
-    @property
     def root_cmd(self) -> str:
         return str(self.root)
 
@@ -219,7 +214,6 @@ def dump_build_context(ctx: BuildContext) -> None:
         "zipsrc": ctx.zipsrc,
         "reslister": ctx.reslister,
         "vmfii": ctx.vmfii,
-        "launch_game_cmd": ctx.launch_game_cmd,
         "root_cmd": ctx.root_cmd,
     }
     for name, value in derived.items():

@@ -23,8 +23,6 @@ DONT_PUBLISH_NAV = 0
 ENABLE_BSPREZIP = 1
 NO_MISSING_BUNDLING = 0
 
-prompt = "\u001b[32m$P$G\u001b[0m"
-
 mapfile = "metastruct_3"
 mapname = "gm_construct_m3_%BUILD_VERSION%"
 
