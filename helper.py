@@ -53,7 +53,11 @@ def load_user_config(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     for raw_line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
         line = raw_line.strip()
-        if not line or line.lower().startswith("@rem") or line.lower().startswith("rem"):
+        if (
+            not line
+            or line.lower().startswith("@rem")
+            or line.lower().startswith("rem")
+        ):
             continue
         if line.lower().startswith("@set "):
             line = line[5:]
@@ -92,7 +96,9 @@ def expand_value(value: str, env: dict[str, str]) -> str:
     if not value:
         return value
     for _ in range(10):
-        candidate = VAR_PATTERN.sub(lambda match: env.get(match.group(1), match.group(0)), value)
+        candidate = VAR_PATTERN.sub(
+            lambda match: env.get(match.group(1), match.group(0)), value
+        )
         if candidate == value:
             break
         value = candidate
@@ -109,9 +115,17 @@ def run(
     stderr=None,
     shell: bool = False,
 ) -> subprocess.CompletedProcess[str]:
-    command_str = args if isinstance(args, str) else " ".join(shlex.quote(str(arg)) for arg in args)
+    command_str = (
+        args
+        if isinstance(args, str)
+        else " ".join(shlex.quote(str(arg)) for arg in args)
+    )
     print()
-    print(colorama.Fore.YELLOW + ">>> executing command: ", colorama.Style.BRIGHT + colorama.Fore.CYAN + command_str,colorama.Fore.MAGENTA + f"    (cwd: {cwd})")
+    print(
+        colorama.Fore.YELLOW + ">>> executing command: ",
+        colorama.Style.BRIGHT + colorama.Fore.CYAN + command_str,
+        colorama.Fore.MAGENTA + f"    (cwd: {cwd})",
+    )
 
     result = subprocess.run(
         args,
@@ -131,7 +145,15 @@ def run(
         print(colorama.Fore.GREEN + f"<<< OK")
         print()
     if check and result.returncode != 0:
-        raise BuildError("process failed", {"args": args, "returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr})
+        raise BuildError(
+            "process failed",
+            {
+                "args": args,
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            },
+        )
     return result
 
 
@@ -144,7 +166,9 @@ def read_version_file(path: Path) -> int:
     try:
         return int(text.splitlines()[0].strip())
     except ValueError as exc:
-        raise BuildError("version file contains invalid integer", {"path": str(path), "text": text}) from exc
+        raise BuildError(
+            "version file contains invalid integer", {"path": str(path), "text": text}
+        ) from exc
 
 
 def write_version_file(path: Path, version: int) -> None:
@@ -170,7 +194,7 @@ def copy_tree(source: Path, destination: Path) -> None:
             dst = destination / rel_root / filename
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dst)
-            #get_logger().debug("copy.tree.file", source=str(src), destination=str(dst))
+            # get_logger().debug("copy.tree.file", source=str(src), destination=str(dst))
 
 
 def set_readonly(path: Path, readonly: bool) -> None:
@@ -203,21 +227,16 @@ def remove_path(path: Path) -> None:
         path.unlink(missing_ok=True)
 
 
-def copy_optional(source: Path, destination: Path) -> None:
+def copy_file(source: Path, destination: Path, optional: bool = False) -> None:
     if not source.exists():
-        get_logger().debug("copy.optional.missing", source=str(source))
-        return
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source, destination)
-    get_logger().info("copy.optional", source=str(source), destination=str(destination))
-
-
-def copy_required(source: Path, destination: Path) -> None:
-    if not source.exists():
+        if optional:
+            get_logger().debug("copy.optional.missing", source=str(source))
+            return
         raise BuildError("required file missing", {"path": str(source)})
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(source, destination)
-    get_logger().info("copy.required", source=str(source), destination=str(destination))
+    level = "optional" if optional else "required"
+    get_logger().info(f"copy.{level}", source=str(source), destination=str(destination))
 
 
 def flash_console() -> None:

@@ -6,6 +6,7 @@ import os
 import shutil
 import stat
 import sys
+from enum import Enum, auto
 from functools import wraps
 from pathlib import Path
 from typing import Any
@@ -18,8 +19,7 @@ from extras.gmodcommander import run_task as run_gmodcommander_task
 from commonconfig import check_paths, next_build_version, stage
 from helper import (
     BuildError,
-    copy_optional,
-    copy_required,
+    copy_file,
     create_junction,
     configure_logging,
     expand_value,
@@ -42,7 +42,48 @@ import publish_map
 LOGGER = structlog.get_logger()
 
 
-def prompt_task() -> tuple[str, bool]:
+class Task(Enum):
+    BUILD = auto()
+    REBUILD = auto()
+    POSTPROCESS = auto()
+    DUMP = auto()
+    CLEANUP = auto()
+    PUBLISH = auto()
+    LEAKTEST = auto()
+    PLAY = auto()
+
+
+_TASK_ALIASES: dict[str, Task] = {
+    "b": Task.BUILD,
+    "build": Task.BUILD,
+    "r": Task.REBUILD,
+    "rebuild": Task.REBUILD,
+    "p": Task.POSTPROCESS,
+    "postprocess": Task.POSTPROCESS,
+    "d": Task.DUMP,
+    "dump": Task.DUMP,
+    "cleanup": Task.CLEANUP,
+    "publish": Task.PUBLISH,
+    "l": Task.LEAKTEST,
+    "leaktest": Task.LEAKTEST,
+    "play": Task.PLAY,
+    "t": Task.BUILD,
+    "test": Task.BUILD,
+}
+
+_NEEDS_VERSION_FILE: set[Task] = {
+    Task.POSTPROCESS,
+    Task.DUMP,
+    Task.CLEANUP,
+    Task.PLAY,
+    Task.PUBLISH,
+    Task.LEAKTEST,
+}
+
+_TASK_HELP = "/".join(t.name.lower() for t in Task)
+
+
+def prompt_task() -> tuple[Task, bool]:
     while True:
         print("\nTasks")
         print("   [B]uild")
@@ -51,16 +92,19 @@ def prompt_task() -> tuple[str, bool]:
         print("   [D]ump build context")
         print("   [t]est build system")
         choice = input("Select task> ").strip().lower()
-        if choice in ("b", "build"):
-            return "build", False
-        if choice in ("r", "rebuild"):
-            return "rebuild", False
-        if choice in ("p", "postprocess"):
-            return "postprocess", False
-        if choice in ("d", "dump"):
-            return "dump", False
-        if choice in ("t", "test"):
-            return "build", True
+        if choice in _TASK_ALIASES:
+            test_mode = choice == "t"
+            return _TASK_ALIASES[choice], test_mode
+
+
+def parse_command(raw_command: str | None) -> tuple[Task, bool]:
+    if raw_command is None:
+        return prompt_task()
+    normalized = raw_command.lower()
+    if normalized in _TASK_ALIASES:
+        test_mode = normalized == "t"
+        return _TASK_ALIASES[normalized], test_mode
+    raise argparse.ArgumentTypeError("unknown command")
 
 
 @stage("prepare_workspace")
@@ -71,13 +115,17 @@ def prepare_workspace(ctx: BuildContext) -> None:
     junction = TempAddonJunction(ctx.bspzip_gma_out, ctx.maptoolkit_temp_addon)
     junction.link()
     ctx._temp_addon_junction = junction
-    copy_required(ctx.mapfolder / f"{ctx.mapfile}.vmf", ctx.targetvmf)
-    copy_optional(ctx.mapfolder / f"{ctx.mapfile}.rad", ctx.targetrad)
-    copy_optional(ctx.mapfolder / f"{ctx.mapfile}.vbsp", ctx.targetvbsp)
-    copy_optional(
-        ctx.mapfolder / "detail_custom.vbsp", ctx.vproject / "detail_custom.vbsp"
+    copy_file(ctx.mapfolder / f"{ctx.mapfile}.vmf", ctx.targetvmf)
+    copy_file(ctx.mapfolder / f"{ctx.mapfile}.rad", ctx.targetrad, optional=True)
+    copy_file(ctx.mapfolder / f"{ctx.mapfile}.vbsp", ctx.targetvbsp, optional=True)
+    copy_file(
+        ctx.mapfolder / "detail_custom.vbsp",
+        ctx.vproject / "detail_custom.vbsp",
+        optional=True,
     )
-    copy_optional(ctx.mapfolder / "detail.vbsp", ctx.vproject / "detail.vbsp")
+    copy_file(
+        ctx.mapfolder / "detail.vbsp", ctx.vproject / "detail.vbsp", optional=True
+    )
 
 
 @stage("run_vmfii")
@@ -110,7 +158,7 @@ def run_trigger_strip(ctx: BuildContext) -> None:
         return
     trigger_name = f"{ctx.mapname}_trigger"
     source = ctx.mapfolder / f"{trigger_name}.vmf"
-    copy_required(ctx.targetvmf, source)
+    copy_file(ctx.targetvmf, source)
     run(
         ["vlts.exe", str(source), str(ctx.targetvmf)],
         cwd=ctx.root,
@@ -135,11 +183,11 @@ def run_trigger_strip(ctx: BuildContext) -> None:
         ctx.game_dir / "maps" / f"{trigger_name}.bsp",
     )
     run_gmodcommander_task("trigger_extract", trigger_name, ctx.process_env)
-    copy_required(
+    copy_file(
         ctx.game_dir / "data" / "bspdata" / trigger_name / "triggers.json",
         ctx.game_dir / "maps" / f"{ctx.mapname}_triggers.lmp",
     )
-    copy_required(
+    copy_file(
         ctx.game_dir / "data" / "bspdata" / trigger_name / "trigmesh.json",
         ctx.game_dir / "maps" / f"{ctx.mapname}_trigmesh.lmp",
     )
@@ -235,7 +283,7 @@ def run_leaktest(ctx: BuildContext) -> None:
 def copy_bsp_to_game(ctx: BuildContext) -> None:
     source = ctx.mapfolder / f"{ctx.mapname}.bsp"
     destination = ctx.game_dir / "maps" / f"{ctx.mapname}.bsp"
-    copy_required(source, destination)
+    copy_file(source, destination)
 
 
 @stage("pack_required_files")
@@ -364,12 +412,12 @@ def repack_bsp_if_needed(ctx: BuildContext) -> None:
     if int(ctx.env.get("ENABLE_BSPREZIP", "0")) != 1:
         LOGGER.info("bsprezip.skipped")
         return
-    copy_required(
+    copy_file(
         ctx.mapfolder / f"{ctx.mapname}.bsp",
         ctx.game_dir / "maps" / f"{ctx.mapname}_prezip.bsp",
     )
     run_gmodcommander_task("bsprezip", ctx.mapname, ctx.process_env)
-    copy_required(
+    copy_file(
         ctx.game_dir / "data" / f"{ctx.mapname}.bsp.dat",
         ctx.game_dir / "maps" / f"{ctx.mapname}.bsp",
     )
@@ -381,7 +429,7 @@ def generate_navmesh(ctx: BuildContext) -> None:
     if not seed_file.exists():
         LOGGER.info("navmesh.seed_missing", path=str(seed_file))
         return
-    copy_required(seed_file, ctx.game_dir / "data" / "navmesh_landmarks.txt")
+    copy_file(seed_file, ctx.game_dir / "data" / "navmesh_landmarks.txt")
     run_gmodcommander_task("navmesh", ctx.mapname, ctx.process_env)
     target_nav = ctx.game_dir / "maps" / f"{ctx.mapname}.nav"
     if not target_nav.exists() or target_nav.stat().st_size == 0:
@@ -460,38 +508,13 @@ def run_postprocess(ctx: BuildContext) -> None:
     run_build_workflow(ctx, prepare=False)
 
 
-def parse_command(raw_command: str | None) -> tuple[str, bool]:
-    if raw_command is None:
-        return prompt_task()
-    normalized = raw_command.lower()
-    if normalized in ("b", "build"):
-        return "build", False
-    if normalized in ("r", "rebuild"):
-        return "rebuild", False
-    if normalized in ("p", "postprocess"):
-        return "postprocess", False
-    if normalized in ("d", "dump"):
-        return "dump", False
-    if normalized in ("cleanup",):
-        return "cleanup", False
-    if normalized in ("publish",):
-        return "publish", False
-    if normalized in ("l", "leaktest"):
-        return "leaktest", False
-    if normalized in ("play",):
-        return "play", False
-    if normalized in ("t", "test"):
-        return "build", True
-    raise argparse.ArgumentTypeError("unknown command")
-
-
 def main() -> int:
     configure_logging()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "command",
         nargs="?",
-        help="build/rebuild/postprocess/dump/cleanup/play/publish/leaktest/test",
+        help=_TASK_HELP,
     )
     parser.add_argument("--test", action="store_true", help="enable test build mode")
     args = parser.parse_args()
@@ -502,48 +525,50 @@ def main() -> int:
         root = Path(__file__).resolve().parent
         base_env = load_common_env(root)
         check_paths(base_env)
-        if task in ("postprocess", "dump", "cleanup", "play", "publish", "leaktest"):
+        if task in _NEEDS_VERSION_FILE:
             version = read_version_file(Path(base_env["version_file"]))
         else:
-            delta = 1 if task == "build" else 0
+            delta = 1 if task == Task.BUILD else 0
             version = next_build_version(Path(base_env["version_file"]), delta)
         env = load_common_env(root, build_version=version)
         env["TESTBUILD"] = "1" if test_mode else env.get("TESTBUILD", "0")
-        if task == "dump":
+        if task == Task.DUMP:
             ctx = BuildContext(root, env)
             dump_build_context(ctx)
             return 0
-        if task == "cleanup":
+        if task == Task.CLEANUP:
             ctx = BuildContext(root, env)
             cleanup(ctx)
             return 0
-        if task == "play":
+        if task == Task.PLAY:
             ctx = BuildContext(root, env)
             launch_game(ctx)
             return 0
-        if task == "postprocess":
+        if task == Task.POSTPROCESS:
             ctx = BuildContext(root, env)
             run_postprocess(ctx)
-            LOGGER.info("build.finished", task=task, version=version)
+            LOGGER.info("build.finished", task=task.name.lower(), version=version)
             return 0
-        if task == "publish":
+        if task == Task.PUBLISH:
             publish_map.publish_map(root, env)
-            LOGGER.info("publish.finished", task=task, version=version)
+            LOGGER.info("publish.finished", task=task.name.lower(), version=version)
             return 0
-        if task == "leaktest":
+        if task == Task.LEAKTEST:
             ctx = BuildContext(root, env)
             try:
                 run_leaktest(ctx)
             except BuildError:
-                LOGGER.info("leaktest.finished", task=task, version=version)
+                LOGGER.info(
+                    "leaktest.finished", task=task.name.lower(), version=version
+                )
                 print(colorama.Fore.RED + "LEAKTEST FAILED: .lin file was generated")
                 print(f"File path to .lin: {ctx.mapfolder / f'{ctx.mapname}.lin'}")
                 return 1
-            LOGGER.info("leaktest.finished", task=task, version=version)
+            LOGGER.info("leaktest.finished", task=task.name.lower(), version=version)
             return 0
         ctx = BuildContext(root, env)
         run_build(ctx)
-        LOGGER.info("build.finished", task=task, version=version)
+        LOGGER.info("build.finished", task=task.name.lower(), version=version)
         return 0
     except BuildError as exc:
         LOGGER.error(
@@ -561,6 +586,5 @@ def main() -> int:
             LOGGER.warning("cleanup.failed", exc_info=True)
 
 
-copy_optional
 if __name__ == "__main__":
     raise SystemExit(main())
