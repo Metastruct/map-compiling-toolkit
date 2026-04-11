@@ -1,0 +1,45 @@
+# Override values here for your local build environment.
+# Use %VARIABLE% syntax for cross-references.
+
+SteamAppUser = "ChangeMe"
+SteamPath = "X:\\g\\steam"
+SteamPathAlt = "%SteamPath%\\SteamApps\\common"
+
+mapfolder = "X:\\do\\GMod\\mapfiles"
+version_file = "%mapfolder%\\ver_meta3.txt"
+mapdata = "X:\\do\\GMod\\mapdata"
+
+GameDir = "%SteamPath%\\SteamApps\\common\\GarrysMod\\garrysmod"
+GameExeDir = "%SteamPath%\\SteamApps\\common\\GarrysMod"
+
+VBSPEXTRAS = "-notjunc -blocksize 2048"
+VRADHDR = "-softsun 0 -bounce 16"
+VRADLDR = "%VRADHDR%"
+
+NOLDR = 0
+NOHDR = 0
+TRIGGER_STRIPPING_HACK_ENABLE = 1
+DONT_PUBLISH_NAV = 0
+ENABLE_BSPREZIP = 1
+NO_MISSING_BUNDLING = 0
+
+prompt = "\u001b[32m$P$G\u001b[0m"
+
+mapfile = "metastruct_3"
+mapname = "gm_construct_m3_%BUILD_VERSION%"
+
+# test wsid
+# mapwsid = 1816025658
+
+# PROD
+mapwsid = 426381305
+
+GCNOADDONS = "-noaddons"
+
+sourcesdk = "%SteamPath%\\steamapps\\common\\Source SDK Base 2013 Multiplayer"
+FGDS = "%sourcesdk%\\bin\\base.fgd,%sourcesdk%\\bin\\halflife2.fgd,%mapfolder%\\metastruct.fgd"
+
+SteamAppId = 4000
+SteamAppVersionId = 45
+SteamGameId = 211
+SteamGame = "garrysmod"

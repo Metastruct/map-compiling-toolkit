@@ -20,3 +20,7 @@
 /_game_hammer/
 /_user_config.cmd
 /*_game_hammer
+/hammer_inject/src
+/extras/hammerlua/lua/win32
+/beforehl2__game_compiling/bin
+/beforehl2__game_compiling/garrysmod
