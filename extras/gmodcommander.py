@@ -77,7 +77,9 @@ def configure_logging() -> None:
         processors=[
             structlog.processors.add_log_level,
             structlog.processors.TimeStamper(fmt="iso"),
-            structlog.processors.KeyValueRenderer(key_order=["timestamp", "level", "event"]),
+            structlog.processors.KeyValueRenderer(
+                key_order=["timestamp", "level", "event"]
+            ),
         ],
         logger_factory=structlog.PrintLoggerFactory(),
     )
@@ -91,7 +93,10 @@ def copy_files_to_game(game_dir: Path) -> None:
     for filename, relative_dest in COPY_MAP.items():
         source = EXTRAS_ROOT / filename
         if not source.exists():
-            raise BuildError(f"missing source file for gmodcommander: {filename}", {"path": str(source)})
+            raise BuildError(
+                f"missing source file for gmodcommander: {filename}",
+                {"path": str(source)},
+            )
         destination = game_dir / relative_dest
         ensure_destination(destination)
         shutil.copy2(source, destination)
@@ -105,10 +110,20 @@ def find_game_exe(game_exe_dir: Path) -> Path:
     candidate = game_exe_dir / "gmod.exe"
     if candidate.exists():
         return candidate
-    raise BuildError("Could not locate gmod.exe", {"searched": [str(game_exe_dir / "bin" / "win64" / "gmod.exe"), str(game_exe_dir / "gmod.exe")]})
+    raise BuildError(
+        "Could not locate gmod.exe",
+        {
+            "searched": [
+                str(game_exe_dir / "bin" / "win64" / "gmod.exe"),
+                str(game_exe_dir / "gmod.exe"),
+            ]
+        },
+    )
 
 
-def build_gmod_command(game_exe: Path, game_dir: Path, task: str, mapname: str) -> list[str]:
+def build_gmod_command(
+    game_exe: Path, game_dir: Path, task: str, mapname: str
+) -> list[str]:
     task_spec = TASKS.get(task)
     if task_spec is None:
         raise BuildError("Unknown gmodcommander task", {"task": task})
@@ -140,12 +155,14 @@ def build_gmod_command(game_exe: Path, game_dir: Path, task: str, mapname: str) 
     if task_spec["extra_args"]:
         args.extend(task_spec["extra_args"])
 
-    args.extend([
-        "+exec",
-        "gmodcommander",
-        "+con_nprint_bgalpha",
-        task_spec["name"],
-    ])
+    args.extend(
+        [
+            "+exec",
+            "gmodcommander",
+            "+con_nprint_bgalpha",
+            str(task_spec["name"]),
+        ]
+    )
     return args
 
 
@@ -153,18 +170,37 @@ def run_task(task: str, mapname: str, env: dict[str, str]) -> None:
     game_dir = Path(expand_value(env["GameDir"], env))
     game_exe_dir = Path(expand_value(env["GameExeDir"], env))
     if not game_dir.exists() or not game_dir.is_dir():
-        raise BuildError("GameDir does not exist or is not a directory", {"path": str(game_dir)})
+        raise BuildError(
+            "GameDir does not exist or is not a directory", {"path": str(game_dir)}
+        )
     copy_files_to_game(game_dir)
     game_exe = find_game_exe(game_exe_dir)
-    LOGGER.info("gmodcommander:RUN", task=task, mapname=mapname, game_exe=str(game_exe), game_dir=str(game_dir))
-    run(build_gmod_command(game_exe, game_dir, task, mapname), cwd=str(game_exe.parent), env=env, check=True)
+    LOGGER.info(
+        "gmodcommander:RUN",
+        task=task,
+        mapname=mapname,
+        game_exe=str(game_exe),
+        game_dir=str(game_dir),
+    )
+    run(
+        build_gmod_command(game_exe, game_dir, task, mapname),
+        cwd=game_exe.parent,
+        env=env,
+        check=True,
+    )
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Python replacement for extras/gmodcommander.cmd")
+    parser = argparse.ArgumentParser(
+        description="Python replacement for extras/gmodcommander.cmd"
+    )
     parser.add_argument("task", choices=sorted(TASKS), help="gmodcommander task to run")
     parser.add_argument("mapname", help="map name to operate on")
-    parser.add_argument("--config", default=str(PROJECT_ROOT / "config.toml"), help="path to config.toml")
+    parser.add_argument(
+        "--config",
+        default=str(PROJECT_ROOT / "config.toml"),
+        help="path to config.toml",
+    )
     return parser.parse_args()
 
 
@@ -179,7 +215,13 @@ def main() -> int:
         LOGGER.info("task.complete", task=args.task, mapname=args.mapname)
         return 0
     except BuildError as exc:
-        LOGGER.error("task.failed", task=args.task, mapname=args.mapname, error=str(exc), details=exc.details)
+        LOGGER.error(
+            "task.failed",
+            task=args.task,
+            mapname=args.mapname,
+            error=str(exc),
+            details=exc.details,
+        )
         return 1
 
 
