@@ -9,8 +9,7 @@ import structlog
 
 from helper import (
     BuildError,
-    copy_optional,
-    copy_required,
+    copy_file,
     configure_logging,
     copy_tree,
     ensure_directory,
@@ -55,27 +54,31 @@ def publish_map(root: Path, env: dict[str, str]) -> None:
     remove_path(target_tmp)
     ensure_directory(target_tmp)
 
-    LOGGER.info("publish.copy_tree", source=str(bspzip_gma_path), destination=str(target_tmp))
+    LOGGER.info(
+        "publish.copy_tree", source=str(bspzip_gma_path), destination=str(target_tmp)
+    )
     copy_tree(bspzip_gma_path, target_tmp)
-    LOGGER.info("publish.copy_tree", source=str(sourcepath), destination=str(target_tmp))
+    LOGGER.info(
+        "publish.copy_tree", source=str(sourcepath), destination=str(target_tmp)
+    )
     copy_tree(sourcepath, target_tmp)
 
     ensure_directory(target_tmp / "maps")
-    copy_required(game_bsp, target_tmp / "maps" / game_bsp.name)
+    copy_file(game_bsp, target_tmp / "maps" / game_bsp.name)
 
     if int(env.get("TRIGGER_STRIPPING_HACK_ENABLE", "0")) == 1:
         for suffix in ("_triggers.lmp", "_trigmesh.lmp"):
             source_file = Path(env["GameDir"]) / "maps" / f"{env['mapname']}{suffix}"
-            copy_required(source_file, target_tmp / "maps" / source_file.name)
+            copy_file(source_file, target_tmp / "maps" / source_file.name)
 
     graphs_source = Path(env["GameDir"]) / "maps" / "graphs" / f"{env['mapname']}.ain"
     if graphs_source.exists():
         ensure_directory(target_tmp / "maps" / "graphs")
-        copy_required(graphs_source, target_tmp / "maps" / "graphs" / graphs_source.name)
+        copy_file(graphs_source, target_tmp / "maps" / "graphs" / graphs_source.name)
 
     if int(env.get("DONT_PUBLISH_NAV", "0")) != 1:
         nav_source = Path(env["GameDir"]) / "maps" / f"{env['mapname']}.nav"
-        copy_optional(nav_source, target_tmp / "maps" / nav_source.name)
+        copy_file(nav_source, target_tmp / "maps" / nav_source.name, optional=True)
 
     remove_path(gma_path)
     LOGGER.info("publish.create_gma", target=str(gma_path))
@@ -124,9 +127,15 @@ def publish_map(root: Path, env: dict[str, str]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Publish a Garry's Mod map using project config")
-    parser.add_argument("--root", default=Path(__file__).resolve().parent, help="project root directory")
-    parser.add_argument("--config", default="config.toml", help="config.toml path relative to root")
+    parser = argparse.ArgumentParser(
+        description="Publish a Garry's Mod map using project config"
+    )
+    parser.add_argument(
+        "--root", default=Path(__file__).resolve().parent, help="project root directory"
+    )
+    parser.add_argument(
+        "--config", default="config.toml", help="config.toml path relative to root"
+    )
     return parser.parse_args()
 
 
@@ -141,7 +150,9 @@ def main() -> int:
         publish_map(root, env)
         return 0
     except BuildError as error:
-        LOGGER.error("publish.failed", exc_info=True, details=getattr(error, "details", None))
+        LOGGER.error(
+            "publish.failed", exc_info=True, details=getattr(error, "details", None)
+        )
         return 1
     except Exception:
         LOGGER.error("publish.unexpected", exc_info=True)

@@ -13,6 +13,7 @@ from typing import Any
 
 import colorama
 import structlog
+from git import Repo
 
 colorama.init(autoreset=True)
 from extras.gmodcommander import run_task as run_gmodcommander_task
@@ -25,7 +26,6 @@ from helper import (
     expand_value,
     flash_console,
     load_config,
-    open_shell,
     read_version_file,
     remove_path,
     run,
@@ -51,6 +51,11 @@ class Task(Enum):
     PUBLISH = auto()
     LEAKTEST = auto()
     PLAY = auto()
+    HAMMER = auto()
+    EDIT = auto()
+    PROPPER = auto()
+    UPDATE = auto()
+    STATUS = auto()
 
 
 _TASK_ALIASES: dict[str, Task] = {
@@ -67,6 +72,15 @@ _TASK_ALIASES: dict[str, Task] = {
     "l": Task.LEAKTEST,
     "leaktest": Task.LEAKTEST,
     "play": Task.PLAY,
+    "hammer": Task.HAMMER,
+    "h": Task.HAMMER,
+    "edit": Task.EDIT,
+    "e": Task.EDIT,
+    "propper": Task.PROPPER,
+    "update": Task.UPDATE,
+    "u": Task.UPDATE,
+    "status": Task.STATUS,
+    "s": Task.STATUS,
     "t": Task.BUILD,
     "test": Task.BUILD,
 }
@@ -78,6 +92,11 @@ _NEEDS_VERSION_FILE: set[Task] = {
     Task.PLAY,
     Task.PUBLISH,
     Task.LEAKTEST,
+    Task.HAMMER,
+    Task.EDIT,
+    Task.PROPPER,
+    Task.UPDATE,
+    Task.STATUS,
 }
 
 _TASK_HELP = "/".join(t.name.lower() for t in Task)
@@ -90,6 +109,12 @@ def prompt_task() -> tuple[Task, bool]:
         print("   [R]ebuild previous")
         print("   [P]ostprocess previous")
         print("   [D]ump build context")
+        print("   [H]ammer (compile with hammer)")
+        print("   [E]dit (open vmf with hammer)")
+        print("   [L]aunch (play game)")
+        print("   [U]pdate (git pull mapdata/mapfolder)")
+        print("   [S]tatus (check uncommitted changes)")
+        print("   [C]leanup")
         print("   [t]est build system")
         choice = input("Select task> ").strip().lower()
         if choice in _TASK_ALIASES:
@@ -449,30 +474,127 @@ def launch_game(ctx: BuildContext) -> None:
     run_gmodcommander_task("launch", ctx.mapname, ctx.process_env)
 
 
-@stage("maybe_git_prompt")
-def maybe_git_prompt(ctx: BuildContext) -> None:
-    if os.environ.get("NOCOMPILERCOMMIT") is not None:
-        return
-    status = run(
-        [
-            "git",
-            "-C",
-            str(ctx.mapfolder),
-            "status",
-            "--untracked-files=no",
-            "-s",
-        ],
-        cwd=ctx.root,
+def launch_hammer(ctx: BuildContext) -> None:
+    check_uncommitted_changes(ctx)
+    copy_file(
+        ctx.mapfolder / f"{ctx.mapfile}.vbsp",
+        ctx.targetvbsp,
+        optional=True,
+    )
+    copy_file(
+        ctx.mapfolder / "detail_custom.vbsp",
+        ctx.vproject / "detail_custom.vbsp",
+        optional=True,
+    )
+    copy_file(
+        ctx.mapfolder / "detail.vbsp", ctx.vproject / "detail.vbsp", optional=True
+    )
+    hammer_exe = ctx.vproject_hammer.parent / "bin" / "hammerplusplus.exe"
+    if not hammer_exe.exists():
+        raise BuildError("Hammer++ not found", {"path": str(hammer_exe)})
+    run(
+        [str(hammer_exe), *ctx.env.get("HammerParams", "").split()],
+        cwd=ctx.vproject_hammer,
+        env=ctx.process_env,
+        check=True,
+    )
+    check_uncommitted_changes(ctx)
+
+
+def edit_with_hammer(ctx: BuildContext) -> None:
+    if sys.stdin.isatty():
+        needs_pull = False
+        for repo_path, repo_name in [
+            (ctx.mapdata, "mapdata"),
+            (ctx.mapfolder, "mapfolder"),
+        ]:
+            try:
+                repo = Repo(repo_path)
+                if repo.remote().fetch()[0].commit != repo.head.commit:
+                    needs_pull = True
+                    LOGGER.info("edit.pull_available", repo=repo_name)
+            except Exception:
+                pass
+        if needs_pull:
+            answer = input("Run git pull before editing? [Y/n] ").strip().lower()
+            if answer in ("", "y", "yes"):
+                run_update(ctx)
+    hammer_exe = ctx.vproject_hammer.parent / "bin" / "hammerplusplus.exe"
+    if not hammer_exe.exists():
+        raise BuildError("Hammer++ not found", {"path": str(hammer_exe)})
+    run(
+        [str(hammer_exe), str(ctx.mapfolder / f"{ctx.mapfile}.vmf")],
+        cwd=ctx.vproject_hammer,
+        env=ctx.process_env,
+        check=True,
+    )
+
+
+def run_update(ctx: BuildContext) -> None:
+    result = run(
+        ["git", "-C", str(ctx.mapdata), "pull"],
+        cwd=ctx.mapdata,
         env=ctx.process_env,
         capture_output=True,
-        check=False,
     )
-    if status.stdout.strip():
-        LOGGER.warning("git.dirty", output=status.stdout.strip())
-        if sys.stdin.isatty():
-            answer = input("Open shell in map folder? [Y/n] ").strip().lower()
-            if answer in ("", "y", "yes"):
-                open_shell(ctx.mapfolder)
+    if result.returncode != 0:
+        raise BuildError("git pull failed for mapdata", {"stdout": result.stdout})
+    LOGGER.info("update.mapdata.pulled", path=str(ctx.mapdata))
+
+    result = run(
+        ["git", "-C", str(ctx.mapfolder), "pull"],
+        cwd=ctx.mapfolder,
+        env=ctx.process_env,
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        raise BuildError("git pull failed for mapfolder", {"stdout": result.stdout})
+    LOGGER.info("update.mapfolder.pulled", path=str(ctx.mapfolder))
+
+
+def check_uncommitted_changes(ctx: BuildContext) -> bool:
+    has_changes = False
+    for repo_path, repo_name in [
+        (ctx.mapdata, "mapdata"),
+        (ctx.mapfolder, "mapfolder"),
+    ]:
+        try:
+            repo = Repo(repo_path)
+            dirty = repo.is_dirty()
+            staged = bool(repo.index.diff("HEAD"))
+            untracked = repo.untracked_files
+            if dirty or staged or untracked:
+                has_changes = True
+                print(colorama.Fore.YELLOW + f"Uncommitted changes in {repo_name}:")
+                if staged:
+                    for diff in repo.index.diff("HEAD"):
+                        print(colorama.Fore.RED + f"  M {diff.a_path}")
+                if dirty:
+                    for diff in repo.index.diff(None):
+                        print(colorama.Fore.CYAN + f"  ? {diff.a_path}")
+                for f in untracked:
+                    print(colorama.Fore.RED + f"  ?? {f}")
+        except Exception:
+            pass
+    return has_changes
+
+
+def run_status(ctx: BuildContext) -> int:
+    if check_uncommitted_changes(ctx):
+        LOGGER.warning("status.dirty")
+        return 1
+    LOGGER.info("status.clean")
+    return 0
+
+
+def run_propper(ctx: BuildContext) -> None:
+    import propperall
+
+    propperall.compile_with_propper(
+        ctx.mapfolder,
+        ctx.root / "game_compiling" / "garrysmod",
+        ctx.mapdata,
+    )
 
 
 def cleanup(ctx: BuildContext) -> None:
@@ -483,6 +605,7 @@ def cleanup(ctx: BuildContext) -> None:
 
 
 def run_build_workflow(ctx: BuildContext, prepare: bool) -> None:
+
     if prepare:
         prepare_workspace(ctx)
         run_vmfii(ctx)
@@ -497,7 +620,7 @@ def run_build_workflow(ctx: BuildContext, prepare: bool) -> None:
     repack_bsp_if_needed(ctx)
     generate_navmesh(ctx)
     launch_game(ctx)
-    maybe_git_prompt(ctx)
+    check_uncommitted_changes(ctx)
 
 
 def run_build(ctx: BuildContext) -> None:
@@ -543,6 +666,25 @@ def main() -> int:
         if task == Task.PLAY:
             ctx = BuildContext(root, env)
             launch_game(ctx)
+            return 0
+        if task == Task.HAMMER:
+            ctx = BuildContext(root, env)
+            launch_hammer(ctx)
+            return 0
+        if task == Task.EDIT:
+            ctx = BuildContext(root, env)
+            edit_with_hammer(ctx)
+            return 0
+        if task == Task.UPDATE:
+            ctx = BuildContext(root, env)
+            run_update(ctx)
+            return 0
+        if task == Task.STATUS:
+            ctx = BuildContext(root, env)
+            return run_status(ctx)
+        if task == Task.PROPPER:
+            ctx = BuildContext(root, env)
+            run_propper(ctx)
             return 0
         if task == Task.POSTPROCESS:
             ctx = BuildContext(root, env)
