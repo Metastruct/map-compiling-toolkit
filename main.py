@@ -69,9 +69,7 @@ _TASK_ALIASES: dict[str, Task] = {
     "dump": Task.DUMP,
     "cleanup": Task.CLEANUP,
     "publish": Task.PUBLISH,
-    "l": Task.LEAKTEST,
     "leaktest": Task.LEAKTEST,
-    "play": Task.PLAY,
     "hammer": Task.HAMMER,
     "h": Task.HAMMER,
     "edit": Task.EDIT,
@@ -81,8 +79,9 @@ _TASK_ALIASES: dict[str, Task] = {
     "u": Task.UPDATE,
     "status": Task.STATUS,
     "s": Task.STATUS,
-    "t": Task.BUILD,
-    "test": Task.BUILD,
+    "play": Task.PLAY,
+    "t": Task.PLAY,
+    "test": Task.PLAY,
 }
 
 _NEEDS_VERSION_FILE: set[Task] = {
@@ -102,20 +101,22 @@ _NEEDS_VERSION_FILE: set[Task] = {
 _TASK_HELP = "/".join(t.name.lower() for t in Task)
 
 
-def prompt_task() -> tuple[Task, bool]:
+def prompt_task(mapname: str | None = None) -> tuple[Task, bool]:
     while True:
         print("\nTasks")
-        print("   [B]uild")
-        print("   [R]ebuild previous")
-        print("   [P]ostprocess previous")
-        print("   [D]ump build context")
-        print("   [H]ammer (compile with hammer)")
-        print("   [E]dit (open vmf with hammer)")
-        print("   [L]aunch (play game)")
+        print("   [B]uild new version")
+        print("   [R]ebuild version")
+        print("   [P]ostprocess version")
+        print("   [D]ebug config dump")
+        print("   [H]ammer (open hammer)")
+        print("   [E]dit   (open hammer with the root vmf)")
+        if mapname:
+            print(f"   [T]est play map ({mapname})")
+        else:
+            print("   [T]est play map (no mapname found in config)")
         print("   [U]pdate (git pull mapdata/mapfolder)")
         print("   [S]tatus (check uncommitted changes)")
         print("   [C]leanup")
-        print("   [t]est build system")
         choice = input("Select task> ").strip().lower()
         if choice in _TASK_ALIASES:
             test_mode = choice == "t"
@@ -155,8 +156,8 @@ def prepare_workspace(ctx: BuildContext) -> None:
 
 @stage("run_vmfii")
 def run_vmfii(ctx: BuildContext) -> None:
-    LOGGER.info("vmfii.start", target=str(ctx.targetvmf))
     log_path = ctx.mapfolder / f"{ctx.mapname}.log"
+    LOGGER.info("vmfii.run", target=str(ctx.targetvmf),logfile=str(log_path))
     with log_path.open("a", encoding="utf-8", errors="ignore") as handle:
         run(
             [
@@ -471,6 +472,7 @@ def launch_game(ctx: BuildContext) -> None:
         LOGGER.info("launch.skipped.testbuild")
         return
     flash_console()
+    print(colorama.Fore.CYAN + f"Launching map {ctx.mapname}" + colorama.Style.RESET_ALL)
     run_gmodcommander_task("launch", ctx.mapname, ctx.process_env)
 
 
@@ -642,12 +644,15 @@ def main() -> int:
     parser.add_argument("--test", action="store_true", help="enable test build mode")
     args = parser.parse_args()
     try:
-        task, test_mode = parse_command(args.command)
-        if args.test:
-            test_mode = True
         root = Path(__file__).resolve().parent
         base_env = load_common_env(root)
         check_paths(base_env)
+        if args.command is None:
+            task, test_mode = prompt_task(base_env["mapname"])
+        else:
+            task, test_mode = parse_command(args.command)
+        if args.test:
+            test_mode = True
         if task in _NEEDS_VERSION_FILE:
             version = read_version_file(Path(base_env["version_file"]))
         else:
