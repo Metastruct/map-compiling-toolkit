@@ -226,9 +226,9 @@ def create_junction(target: Path, link_name: Path) -> None:
 
 
 def remove_path(path: Path) -> None:
-    if not path.exists() and not path.is_symlink():
+    if not path.exists() and not path.is_symlink() and not path.is_junction():
         return
-    if path.is_dir() and not path.is_symlink():
+    if path.is_dir() and not path.is_symlink() and not path.is_junction():
         shutil.rmtree(path, ignore_errors=True)
     else:
         path.unlink(missing_ok=True)
