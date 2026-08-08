@@ -484,6 +484,15 @@ def launch_game(ctx: BuildContext) -> None:
     run_gmodcommander_task("launch", ctx.mapname, ctx.process_env)
 
 
+def _hammer_env(ctx: BuildContext) -> dict[str, str]:
+    # hammer++ reads the VProject env var like every Source tool. The toolkit
+    # normally uses VProject for the compiler root (game_compiling), but hammer
+    # must mount game_hammer's gameinfo, so point VProject at the hammer game.
+    env = ctx.process_env.copy()
+    env["VProject"] = str(ctx.vproject_hammer)
+    return env
+
+
 def launch_hammer(ctx: BuildContext) -> None:
     check_uncommitted_changes(ctx)
     copy_file(
@@ -493,11 +502,11 @@ def launch_hammer(ctx: BuildContext) -> None:
     )
     copy_file(
         ctx.mapfolder / "detail_custom.vbsp",
-        ctx.vproject / "detail_custom.vbsp",
+        ctx.vproject_hammer / "detail_custom.vbsp",
         optional=True,
     )
     copy_file(
-        ctx.mapfolder / "detail.vbsp", ctx.vproject / "detail.vbsp", optional=True
+        ctx.mapfolder / "detail.vbsp", ctx.vproject_hammer / "detail.vbsp", optional=True
     )
     hammer_exe = ctx.vproject_hammer.parent / "bin" / "win64" / "hammerplusplus.exe"
     if not hammer_exe.exists():
@@ -505,8 +514,8 @@ def launch_hammer(ctx: BuildContext) -> None:
     run(
         [str(hammer_exe), *ctx.env.get("HammerParams", "").split()],
         cwd=ctx.vproject_hammer,
-        env=ctx.process_env,
-        check=True,
+        env=_hammer_env(ctx),
+        check=False,
     )
     check_uncommitted_changes(ctx)
 
@@ -535,7 +544,7 @@ def edit_with_hammer(ctx: BuildContext) -> None:
     run(
         [str(hammer_exe), str(ctx.mapfolder / f"{ctx.mapfile}.vmf")],
         cwd=ctx.vproject_hammer,
-        env=ctx.process_env,
+        env=_hammer_env(ctx),
         check=True,
     )
 

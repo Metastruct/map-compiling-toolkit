@@ -66,6 +66,8 @@ pathcheck(True,"Map assets\t",MapAssets())
 print("")
 
 def link(s,target):
+	if target.is_dir():
+		target = target / Path(s).name
 	try:
 		os.link(    str(s), str(target))
 	except OSError as e:
@@ -102,6 +104,11 @@ def RebuildHammerRoot():
 		mov(GetGModPath() / "garrysmod/detail.vbsp",'garrysmod/')
 		with (HAMMER / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
+
+		# hammer++ mounts the vpks in the game directory; without them GMod
+		# content (e.g. materials/metal6.vtf) is missing in the 3D views.
+		for vpk_file in ('garrysmod_000.vpk','garrysmod_001.vpk','garrysmod_002.vpk','garrysmod_dir.vpk'):
+			link(GetGModPath() / 'garrysmod' / vpk_file, HAMMER / GDIR)
 			
 		mov(GetGModPath() / "bin",'bin')
 		mov(GetGModPath() / "platform",'platform')
@@ -115,15 +122,25 @@ def RebuildHammerRoot():
 					if not i.is_dir():
 						i.unlink()
 
-		# We don't want to mount hl2_misc_dir as game so we extract the shaders
-		# ATTN: sourceengine/hl2_misc_dir.vpk shaders do not work with hammer++ 
-		with vpk.open(str(GetGModPath()/'sourceengine'/'hl2_misc_dir.vpk')) as hl2misc:
-			for fpath in hl2misc:
-				if fpath.startswith("shaders/"):
-					(HAMMER / GDIR / Path(fpath).parents[0]).mkdir(parents=True, exist_ok=True)
-					
-					with hl2misc.get_file(fpath) as input,(HAMMER / GDIR / Path(fpath)).open('wb') as output:
-						copyfileobj(input, output)
+		# We don't want to mount the shader vpks as game so we extract the shaders.
+		# hammer++ runs GMod's engine shader DLLs, so GMod's own shader caches must
+		# win: extract garrysmod_dir.vpk first, then hl2_misc_dir.vpk only fills gaps.
+		# ATTN: if hl2_misc_dir.vpk shaders shadow GMod's, GMod shaders break with
+		# "Couldn't load combo" errors (e.g. shaders\fxc\depthwrite_vs20.vcs).
+		shaders_sources = [
+			GetGModPath()/'garrysmod'/'garrysmod_dir.vpk',
+			GetGModPath()/'sourceengine'/'hl2_misc_dir.vpk',
+		]
+		for vpk_path in shaders_sources:
+			with vpk.open(str(vpk_path)) as v:
+				for fpath in v:
+					if fpath.startswith("shaders/"):
+						target = HAMMER / GDIR / Path(fpath)
+						if target.exists():
+							continue  # earlier source already won
+						target.parent.mkdir(parents=True, exist_ok=True)
+						with v.get_file(fpath) as input, target.open('wb') as output:
+							copyfileobj(input, output)
 
 		#hpp.mkdir(exist_ok=False)
 		#mov(ToolkitRoot() / "extras/slammin_2013mp/bin/",'bin/') # no work because limits :(
@@ -170,11 +187,21 @@ def BuildHammerGameConfig():
 	Hammer["MapDir"]= str(GetGModPath()/'garrysmod/maps')
 	Hammer["GameExe"]= str(GetGModPath()/'hl2.exe')
 	Hammer["BSPDir"]=Hammer["MapDir"]
+	Hammer["Previous"]="1"
 	
-	target=HammerRoot() / 'bin/GameConfig.txt'
-	with target.open('w') as out:
-		vdf.dump(GameConfig, out, pretty=True)
-	print("Generated ",target,"!")
+	# hammer++ ignores bin/GameConfig.txt and reads its own config from the
+	# "hammerplusplus" sub folder next to the exe (game_hammer/bin/win64/).
+	# Without it, hammer++ generates a vanilla config pointing at the real GMod
+	# install, so custom FGDs (metastruct.fgd) and mapdata mounts are missing.
+	targets=[
+		HammerRoot() / 'bin/GameConfig.txt',
+		HammerRoot() / 'bin/win64/hammerplusplus/hammerplusplus_gameconfig.txt',
+	]
+	for target in targets:
+		target.parent.mkdir(parents=True, exist_ok=True)
+		with target.open('w') as out:
+			vdf.dump(GameConfig, out, pretty=True)
+		print("Generated ",target,"!")
 	
 def write_mountcfg(target):
 	with open(Path('.') / 'mount.cfg') as template:
@@ -210,14 +237,14 @@ def BuildGameInfo(target):
 	#SearchPaths["game"]=HammerRoot()/GDIR
 	SearchPaths["game"]=MapAssets()
 	
-	SearchPaths["game"]=TF2Path("tf")/"tf2_sound_misc.vpk"
-	SearchPaths["game"]=TF2Path("tf")/"tf2_textures.vpk"
-	SearchPaths["game"]=TF2Path("tf")/"tf2_misc.vpk"
-	SearchPaths["game"]=CSSPath("cstrike")/"cstrike_pak.vpk"
-	SearchPaths["game"]=GetGModPath()/"garrysmod/garrysmod.vpk"
-	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_textures.vpk"
-	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_sound_misc.vpk"
-	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_misc.vpk"
+	SearchPaths["game"]=TF2Path("tf")/"tf2_sound_misc_dir.vpk"
+	SearchPaths["game"]=TF2Path("tf")/"tf2_textures_dir.vpk"
+	SearchPaths["game"]=TF2Path("tf")/"tf2_misc_dir.vpk"
+	SearchPaths["game"]=CSSPath("cstrike")/"cstrike_pak_dir.vpk"
+	SearchPaths["game"]=HammerRoot()/GDIR/"garrysmod_dir.vpk"
+	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_textures_dir.vpk"
+	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_sound_misc_dir.vpk"
+	SearchPaths["game"]=GetGModPath()/"sourceengine/hl2_misc_dir.vpk"
 	SearchPaths["game"]=GetGModPath()/"sourceengine"
 	SearchPaths["platform"]=GetGModPath()/"sourceengine"
 	SearchPaths["gamebin"]=GetGModPath()/"bin"
