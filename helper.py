@@ -114,6 +114,7 @@ def run(
     stdout=None,
     stderr=None,
     shell: bool = False,
+    log_path: Path | None = None,
 ) -> subprocess.CompletedProcess[str]:
     command_str = (
         args
@@ -126,6 +127,12 @@ def run(
         colorama.Style.BRIGHT + colorama.Fore.CYAN + command_str,
         colorama.Fore.MAGENTA + f"    (cwd: {cwd})",
     )
+    if stdout is not None and not capture_output and hasattr(stdout, "write"):
+        stdout.write(f"command: {command_str}\n")
+        stdout.flush()
+    if log_path is not None:
+        with log_path.open("a", encoding="utf-8", errors="ignore") as handle:
+            handle.write(f"command: {command_str}\n")
 
     result = subprocess.run(
         args,

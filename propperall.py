@@ -19,9 +19,11 @@ def run_propper(
     vmf_log: Path,
     version_variable: str,
 ) -> None:
+    command = [str(propper_exe), "-game", str(game_dir), str(vmf_path)]
     with open(vmf_log, "w") as log_file:
+        log_file.write("command: " + " ".join(command) + "\n")
         subprocess.run(
-            [str(propper_exe), "-game", str(game_dir), str(vmf_path)],
+            command,
             stdout=log_file,
             stderr=subprocess.STDOUT,
         )

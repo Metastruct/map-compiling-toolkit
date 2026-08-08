@@ -89,7 +89,7 @@ def load_common_env(root: Path, build_version: int | None = None) -> dict[str, s
         env,
         user,
         "sourcesdk",
-        r"%SteamPath%\steamapps\common\Source SDK Base 2013 Multiplayer",
+        r"%SteamPath%\steamapps\common\GarrysMod",
     )
     assign_environment_value(
         env,

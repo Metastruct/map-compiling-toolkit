@@ -5,7 +5,6 @@ from shutil import copyfileobj
 import vpk
 import traceback
 import sys,time
-import distutils.dir_util
 
 def has_debugger() -> bool:
     return hasattr(sys, 'gettrace') and sys.gettrace() is not None
@@ -76,7 +75,7 @@ def CreateMover(dest):
 	def mov(s,d):
 		if (s).is_dir():
 			#print("copy_tree",s,dest/d)
-			distutils.dir_util.copy_tree(str(s), str(dest / d))
+			shutil.copytree(str(s), str(dest / d), dirs_exist_ok=True)
 		else:
 			shutil.copy(str(s), str(dest/d))
 	return mov
@@ -104,20 +103,21 @@ def RebuildHammerRoot():
 		with (HAMMER / 'garrysmod/steam_appid.txt').open('wb') as f:
 			f.write(b"4000\n\0")
 			
-		mov(SDK2013MPPath() / "bin/",'bin/')
-		mov(SDK2013MPPath() / "platform/",'platform/')
+		mov(GetGModPath() / "bin",'bin')
+		mov(GetGModPath() / "platform",'platform')
 		#mov(GetGModPath() / "garrysmod/resource/",'garrysmod/resource/')
-		hpp=HAMMER/'bin'/'hammerplusplus'
-		print("hpp=",hpp)
-		if hpp.is_dir():
-			print("Deleting old hammerplusplus from copy...")
-			for i in hpp.glob('*'):
-				if not i.is_dir():
-					i.unlink()
+		hpp_dirs=[HAMMER/'bin'/'hammerplusplus',HAMMER/'bin'/'win64'/'hammerplusplus']
+		print("hpp_dirs=",hpp_dirs)
+		for hpp in hpp_dirs:
+			if hpp.is_dir():
+				print("Deleting old hammerplusplus from copy...")
+				for i in hpp.glob('*'):
+					if not i.is_dir():
+						i.unlink()
 
 		# We don't want to mount hl2_misc_dir as game so we extract the shaders
 		# ATTN: sourceengine/hl2_misc_dir.vpk shaders do not work with hammer++ 
-		with vpk.open(str(SDK2013MPPath()/"hl2"/"hl2_misc_dir.vpk")) as hl2misc:
+		with vpk.open(str(GetGModPath()/'sourceengine'/'hl2_misc_dir.vpk')) as hl2misc:
 			for fpath in hl2misc:
 				if fpath.startswith("shaders/"):
 					(HAMMER / GDIR / Path(fpath).parents[0]).mkdir(parents=True, exist_ok=True)
@@ -127,7 +127,7 @@ def RebuildHammerRoot():
 
 		#hpp.mkdir(exist_ok=False)
 		#mov(ToolkitRoot() / "extras/slammin_2013mp/bin/",'bin/') # no work because limits :(
-		mov(ToolkitRoot() / "extras/hammerplusplus_2013mp/bin/",'bin/')
+		mov(ToolkitRoot() / "extras/hammerplusplus_gmod/bin/",'bin/')
 					
 def RebuildCompilerRoot():
 	COMPILER = CompilerRoot()

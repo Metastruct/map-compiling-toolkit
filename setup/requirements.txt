@@ -1,3 +1,0 @@
-vpk
-vdf
-pyinstaller

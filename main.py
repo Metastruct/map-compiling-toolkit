@@ -190,6 +190,7 @@ def run_trigger_strip(ctx: BuildContext) -> None:
         cwd=ctx.root,
         env=ctx.process_env,
         check=True,
+        log_path=ctx.mapfolder / f"{ctx.mapname}.log",
     )
     run(
         [
@@ -203,6 +204,7 @@ def run_trigger_strip(ctx: BuildContext) -> None:
         cwd=ctx.root,
         env=ctx.process_env,
         check=True,
+        log_path=ctx.mapfolder / f"{ctx.mapname}.log",
     )
     shutil.copy2(
         ctx.mapfolder / f"{trigger_name}.bsp",
@@ -221,6 +223,7 @@ def run_trigger_strip(ctx: BuildContext) -> None:
 
 @stage("run_vbsp_vvis_vrad")
 def run_vbsp_vvis_vrad(ctx: BuildContext) -> None:
+    log_path = ctx.mapfolder / f"{ctx.mapname}.log"
     run(
         [
             str(ctx.compilers_dir / "vbsp.exe"),
@@ -233,6 +236,7 @@ def run_vbsp_vvis_vrad(ctx: BuildContext) -> None:
         cwd=ctx.root,
         env=ctx.process_env,
         check=True,
+        log_path=log_path,
     )
     if int(ctx.env.get("TESTBUILD", "0")) != 1:
         run(
@@ -244,6 +248,7 @@ def run_vbsp_vvis_vrad(ctx: BuildContext) -> None:
             cwd=ctx.root,
             env=ctx.process_env,
             check=True,
+            log_path=log_path,
         )
     if int(ctx.env.get("NOLDR", "0")) != 1:
         run(
@@ -258,6 +263,7 @@ def run_vbsp_vvis_vrad(ctx: BuildContext) -> None:
             cwd=ctx.root,
             env=ctx.process_env,
             check=True,
+            log_path=log_path,
         )
     if int(ctx.env.get("TESTBUILD", "0")) != 1:
         run(
@@ -272,6 +278,7 @@ def run_vbsp_vvis_vrad(ctx: BuildContext) -> None:
             cwd=ctx.root,
             env=ctx.process_env,
             check=True,
+            log_path=log_path,
         )
 
 
@@ -289,6 +296,7 @@ def run_vbsp_only(ctx: BuildContext) -> None:
         cwd=ctx.root,
         env=ctx.process_env,
         check=True,
+        log_path=ctx.mapfolder / f"{ctx.mapname}.log",
     )
     if Path(ctx.mapfolder / f"{ctx.mapname}.lin").exists():
         # map leaked

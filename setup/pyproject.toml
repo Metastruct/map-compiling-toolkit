@@ -1,0 +1,17 @@
+[project]
+name = "meta3-mapcompiler-setup"
+version = "0.1.0"
+description = "Builds the Hammer/compiler game roots and generates user config"
+requires-python = ">=3.14"
+dependencies = [
+    "vdf>=3.3",
+    "vpk>=1.3",
+]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.0",
+]
+
+[tool.uv]
+package = false
