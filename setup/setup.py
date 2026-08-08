@@ -10,24 +10,6 @@ def has_debugger() -> bool:
     return hasattr(sys, 'gettrace') and sys.gettrace() is not None
 
 GDIR='garrysmod'
-USERCONFIG_TEMPLATE = r"""@rem see common.cmd for potential configuration options
-
-@set SteamAppUser={SteamAppUser}
-@set SteamPath={SteamPath}
-
-@set SteamPathAlt={SteamPathAlt}
-
-@set mapfolder={mapfolder}
-@set version_file=%mapfolder%\ver_meta3.txt
-@set mapdata={mapdata}
-@set GameDir={GameDir}
-@set GameExeDir={GameExeDir}
-
-@set mapwsid=123456
-@set mapfile={mapfile}
-@set mapname={mapname}_%BUILD_VERSION%
-
-"""
 
 def my_except_hook(*exc_info):
 	if exc_info[0] == KeyboardInterrupt:
@@ -256,39 +238,7 @@ def BuildGameInfo(target):
 		vdf.dump(gameinfo, out, pretty=True)
 	print("Generated ",target,"!")
 
-def GenerateUserConfig():
-	if (ToolkitRoot() / 'user_config.cmd').exists():
-		print("NOTICE: user_config.cmd already exists. If you need to regenerate it, remove it first.")
-		return
-	
-	def GetAnyMap():
-		for map in MapFiles().glob('*.vmf'):
-			return map.replace(".vmf","")
-		return "gm_mymap"
-	
-	
-	
-	with (ToolkitRoot() / 'user_config.cmd').open('w') as output:
-		#TODO getenv?
-		mapfile = (MapFiles() / 'metastruct_3.vmf').exists() and 'metastruct_3' or GetAnyMap()
-		mapname = mapfile=="metastruct_3" and "gm_construct_m3" or "gm_mymap"
-		
-		output.write( USERCONFIG_TEMPLATE.format( SteamAppUser="ChangeMe",
-			SteamPath=GetSteamPath(),
-			SteamPathAlt=GetGModPath().parents[0],
-			mapfolder=MapFiles(),
-			mapdata=MapAssets(),
-			mapfile=mapfile,
-			mapname=mapname,
-			GameDir=GetGModPath()/GDIR,
-			GameExeDir=GetGModPath()
-		))
-	print("Generated user_config.cmd, edit it!")
-
 def main():
-	
-	GenerateUserConfig()
-	RebuildHammerRoot()
 	write_mountcfg(HammerRoot() / 'garrysmod/cfg/mount.cfg')
 
 	RebuildCompilerRoot()

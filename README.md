@@ -6,7 +6,7 @@ A self-contained map editing and compiling environment in a folder.
 Features
 -------------
 
- - Map compiling (vbsp, vvis, vrad, vrad HDR). It's a batch file so configure to your liking yourself.
+ - Map compiling (vbsp, vvis, vrad, vrad HDR). It's a Python script (maptoolkit.cmd), configure via config.toml.
 	 - Low priority, abort on error, etc
  - Instances support using VMFII
  - Auto map versioning (incremental numbering)
@@ -21,8 +21,7 @@ Features
 Requirements
 -------------
  - Steam
-	 - [Source SDK Base 2013 Multiplayer](steam://install/243750)
-	 - [Garry's Mod](steam://install/4000)
+	 - [Garry's Mod](steam://install/4000) (x86-64 branch)
 	 - [CS:S](steam://install/240)
 	 - [TF2](steam://install/440)
  - Metastruct Map Datas (one repo for map files and one for map assets) (or your own map)
@@ -32,12 +31,11 @@ Requirements
 
 Setting up for metastruct map
 -------------
-1. Download [metamap_devenv.cmd](https://raw.githubusercontent.com/Metastruct/map-compiling-toolkit/master/metamap_devenv.cmd)     
-2. Place it on a empty folder that has no spaces in the folder path, with 5GB free disk space. It will download more folders to that folder.
-3. Run it. Hope it finds everything automatically.
-4. Configure the opened user_config.cmd! (look inside common.cmd for configurable params)
-5. DONE! You're on your own now, maybe attempt launch hammer
-6. **If everything goes wrong** delete the folder where metamap_devenv is and redo everything with fixes
+1. Place the toolkit in an empty folder that has no spaces in the folder path, with 5GB free disk space.
+2. Run `setup\setup.exe` (or `setup\setup.py`) to copy the required game binaries into `game_hammer` and `game_compiling`.
+3. Configure `config.toml`! (look inside config.toml for configurable params)
+4. DONE! Launch tasks via `maptoolkit.cmd` (run `maptoolkit.cmd status` for the task list).
+5. **If everything goes wrong** delete the folder and redo everything with fixes
 
 Troubleshooting
 -----

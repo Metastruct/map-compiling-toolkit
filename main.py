@@ -116,6 +116,7 @@ def prompt_task(mapname: str | None = None) -> tuple[Task, bool]:
             print("   [T]est play map (no mapname found in config)")
         print("   [U]pdate (git pull mapdata/mapfolder)")
         print("   [S]tatus (check uncommitted changes)")
+        print("   Propper (type 'propper' to compile propper vmf models)")
         print("   [C]leanup")
         choice = input("Select task> ").strip().lower()
         if choice in _TASK_ALIASES:

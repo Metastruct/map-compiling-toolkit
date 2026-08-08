@@ -47,29 +47,6 @@ class BuildError(Exception):
 VAR_PATTERN = re.compile(r"%([^%]+)%")
 
 
-def load_user_config(path: Path) -> dict[str, str]:
-    if not path.exists():
-        raise BuildError("user_config.cmd must exist", {"path": str(path)})
-    values: dict[str, str] = {}
-    for raw_line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
-        line = raw_line.strip()
-        if (
-            not line
-            or line.lower().startswith("@rem")
-            or line.lower().startswith("rem")
-        ):
-            continue
-        if line.lower().startswith("@set "):
-            line = line[5:]
-        elif line.lower().startswith("set "):
-            line = line[4:]
-        if "=" not in line:
-            continue
-        name, value = line.split("=", 1)
-        values[name.strip()] = value.strip()
-    return values
-
-
 def load_config(path: Path) -> dict[str, str]:
     if not path.exists():
         raise BuildError("config.toml must exist", {"path": str(path)})
