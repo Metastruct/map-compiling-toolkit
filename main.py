@@ -499,7 +499,7 @@ def launch_hammer(ctx: BuildContext) -> None:
     copy_file(
         ctx.mapfolder / "detail.vbsp", ctx.vproject / "detail.vbsp", optional=True
     )
-    hammer_exe = ctx.vproject_hammer.parent / "bin" / "hammerplusplus.exe"
+    hammer_exe = ctx.vproject_hammer.parent / "bin" / "win64" / "hammerplusplus.exe"
     if not hammer_exe.exists():
         raise BuildError("Hammer++ not found", {"path": str(hammer_exe)})
     run(
@@ -529,7 +529,7 @@ def edit_with_hammer(ctx: BuildContext) -> None:
             answer = input("Run git pull before editing? [Y/n] ").strip().lower()
             if answer in ("", "y", "yes"):
                 run_update(ctx)
-    hammer_exe = ctx.vproject_hammer.parent / "bin" / "hammerplusplus.exe"
+    hammer_exe = ctx.vproject_hammer.parent / "bin" / "win64" / "hammerplusplus.exe"
     if not hammer_exe.exists():
         raise BuildError("Hammer++ not found", {"path": str(hammer_exe)})
     run(
@@ -729,9 +729,17 @@ def main() -> int:
         LOGGER.error(
             "build.failed", exc_info=True, details=getattr(exc, "details", None)
         )
+        print()
+        print(colorama.Fore.RED + colorama.Style.BRIGHT + "===== BUILD FAILED =====")
         return 1
     except Exception:
         LOGGER.error("build.unexpected", exc_info=True)
+        print()
+        print(
+            colorama.Fore.RED
+            + colorama.Style.BRIGHT
+            + "===== UNEXPECTED ERROR ====="
+        )
         return 1
     finally:
         try:

@@ -60,7 +60,7 @@
 
 @call user_config.cmd
 
-@set sourcesdk=%SteamPath%\steamapps\common\Source SDK Base 2013 Multiplayer
+@set sourcesdk=%SteamPath%\steamapps\common\GarrysMod
 @call user_config.cmd
 
 @rem FGDs for vmfii, otherwise breakage possibly

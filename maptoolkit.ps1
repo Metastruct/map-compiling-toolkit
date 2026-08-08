@@ -37,4 +37,13 @@ function Invoke-MapToolkit {
     }
 }
 
-Invoke-MapToolkit -Arguments $args
+try {
+    Invoke-MapToolkit -Arguments $args
+    exit $LASTEXITCODE
+}
+catch {
+    Write-Host ""
+    Write-Host "===== Maptoolkit FAILED =====" -ForegroundColor Red
+    Write-Host $_.Exception.Message -ForegroundColor Red
+    exit 1
+}
